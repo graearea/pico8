@@ -2,72 +2,40 @@ pico-8 cartridge // http://www.pico-8.com
 version 18
 __lua__
 x=64 y=64 z=3
-dron = 0
+frame = 0
 dead=false
+
+function reset()
+ for i=0,10 do 
+  add(trees,tree())
+ end 
+end
+
+-- trees
 
 trees={}
 
-function clamp(v,mn,mx)
- return max(mn,min(v,mx))
+function tree()
+	local tree = {
+  x=flr(rnd(128)),
+  y=flr(rnd(128)),
+
+  update = function(self)
+ 	 self.y=(self.y+1)%128
+ 	 local distsq=(x-self.x)*(x-self.x)+
+	  	(y-self.y)*(y-self.y)
+	  if distsq<64 then
+	   dead=true
+ 	 end
+  end,
+
+  draw=function(self)
+   drawtree(self.x-4,self.y-4)
+	 	circfill(self.x,self.y,4,15)
+  end
+ }
+	return tree
 end
-
-function _init()
- for i=0,5 do 
-  add(trees,{
-   x=flr(rnd(128)),
-   y=flr(rnd(128))
-  })
- end
-end
-
-function _update()
-	dron =(dron+1)%3
-	
-	for _,t in pairs(trees) do
-	 t.y=(t.y+1)%128
-	 
-	 --check collision with dron
-	 -- x and y are for dron
-	 local distsq=(x-t.x)*(x-t.x)+
-	 	(y-t.y)*(y-t.y)
-	 
-	 if distsq<64 then
-	  dead=true
-	  foo[2]=2
-	 end
-	end
-	
-	if (btn(⬅️)) then x=x-2 end
-	if (btn(➡️)) then x=x+2 end
-	if (btn(⬆️)) then y=y-2 end
-	if (btn(⬇️)) then y=y+2 end
- if (btn(❎)) 
- then z=clamp(z+1,0,10) end
- if (btn(🅾️)) 
- then z=clamp(z-1,0,10) end
-	
- 
-end
-
-function _draw()
-	cls(2)
-		
-	for _,t in pairs(trees) do
-		drawtree(t.x-4,t.y-4)
-		circfill(t.x,t.y,4,15)
-	end
-	
-	local drx=x-4
-	local dry=y-4
-
-	spr(5,drx+z,dry+z)
-	spr(dron,
-		transform(drx,z,64),
-		transform(dry,z,150))
- circfill(x,y,4,10)
-end
-
-
 
 function drawtree(x,y)
 	for i=6,14 do
@@ -80,15 +48,45 @@ end
 function drawtreepersp(x,y)
 	for i=6,14 do
 		sspr(48+(i-6)*8,0,8,8,
---			perspective(
+			perspective(
 			 transform(x,i-6,64)
-		--		,y)
+		,y)
 
 			,
 		 transform(y,i-6,256),8*(1+y/100),8*(1+y/100)
 		)
 	end
 end
+
+-- drone
+dron = {
+
+	update = function(self)
+	 frame =(frame+1)%3
+		if (btn(⬅️)) then x=x-2 end
+ 	if (btn(➡️)) then x=x+2 end
+ 	if (btn(⬆️)) then y=y-2 end
+ 	if (btn(⬇️)) then y=y+2 end
+  if (btn(❎)) then 
+  	z=clamp(z+1,0,10) 
+  end
+  if (btn(🅾️)) then 
+   z=clamp(z-1,0,10) 
+  end
+	end,
+
+	draw=function(self)
+		local drx=x-4
+ 	local dry=y-4
+		spr(5,drx+z,dry+z)
+	 spr(frame,
+		 transform(drx,z,64),
+		 transform(dry,z,150))
+  circfill(x,y,4,10)
+	end
+}
+
+--drawing decorators
 
 function transform(x,z,center)
 	offset = (x-center)
@@ -106,15 +104,47 @@ function perspective(x,y)
 end
 
 
+-->8
+function _update()
+	if dead then 
+		  foo[2]=2
+	end
+
+	dron:update()
+	
+	for _,t in pairs(trees) do
+		t:update()
+	end
+end
+
+function _draw()
+	cls(2)
+		
+	for _,t in pairs(trees) do
+		t:draw()
+	end
+	
+	dron:draw()
+end
+
+function _init()
+ reset()
+end
+-->8
+function clamp(v,mn,mx)
+ return max(mn,min(v,mx))
+end
+
+
 __gfx__
 080000808000000880800808008008000000000000000000000000000000000000bbbb0000bbbb00000000000000000000000000000000000000000000000000
 06000060068008600600006086000068060000600100001000044000000440000b3333300b33333000bbb30000bbb300000bb000000000000000000000000000
-8085580880655608086556800085580000655600001111000004411000044000b3331133b33311330b3333300b33333000bb3300000000000000000000000000
-000660000006600000066000000660000006600000011000000441110004400033311133333111330b3311300b33113000b33300000bb0000000000000000000
-00066000000660000006600000066000000660000001100000044111000440003311111333111113033111300b31111000b31300000b30000000000000000000
-80600608086006800080080080800808006006000010010000111111000000003311111133111111031111100311111000311300000000000000000000000000
-06800860060000608600006806000060060000600100001000111111000000000331111003311110001111000011110000031000000000000000000000000000
-80000008808008080080080008000080000000000000000000001111000000000011110000111100000000000000000000000000000000000000000000000000
+8085580880655608086556800085580000655600001111000004411000044000b3331133b33311330b3333300b33333000bb33000000000094444ff400000000
+000660000006600000066000000660000006600000011000000441110004400033311133333111330b3311300b33113000b33300000bb0004000000000000000
+00066000000660000006600000066000000660000001100000044111000440003311111333111113033111300b31111000b31300000b30004000000000000000
+80600608086006800080080080800808006006000010010000111111000000003311111133111111031111100311111000311300000000004949494900000000
+06800860060000608600006806000060060000600100001000111111000000000331111003311110001111000011110000031000000000004000000000000000
+80000008808008080080080008000080000000000000000000001111000000000011110000111100000000000000000000000000000000004000000000000000
 __label__
 88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
 88888eeeeee888888888888888888888888888888888888888888888888888888888888888888888888ff8ff8888228822888222822888888822888888228888
