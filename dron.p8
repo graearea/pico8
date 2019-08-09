@@ -1,88 +1,34 @@
 pico-8 cartridge // http://www.pico-8.com
 version 18
 __lua__
-x=64 y=64 z=3
-frame = 0
 dead=false
-
-function reset()
- for i=0,10 do 
-  add(trees,tree())
- end 
-end
-
--- trees
-
-trees={}
-
-function tree()
-	local tree = {
-  x=flr(rnd(128)),
-  y=flr(rnd(128)),
-
-  update = function(self)
- 	 self.y=(self.y+1)%128
- 	 local distsq=(x-self.x)*(x-self.x)+
-	  	(y-self.y)*(y-self.y)
-	  if distsq<64 then
-	   dead=true
- 	 end
-  end,
-
-  draw=function(self)
-   drawtree(self.x-4,self.y-4)
-	 	circfill(self.x,self.y,4,15)
-  end
- }
-	return tree
-end
-
-function drawtree(x,y)
-	for i=6,14 do
-	spr(i,
-		 transform(x,i-6,64),
-		transform(y,i-6,256))
-	end
-end
-
-function drawtreepersp(x,y)
-	for i=6,14 do
-		sspr(48+(i-6)*8,0,8,8,
-			perspective(
-			 transform(x,i-6,64)
-		,y)
-
-			,
-		 transform(y,i-6,256),8*(1+y/100),8*(1+y/100)
-		)
-	end
-end
-
 -- drone
-dron = {
 
+dron = {
+ x=64, y=64, z=3,
+ frame = 0,
 	update = function(self)
-	 frame =(frame+1)%3
-		if (btn(⬅️)) then x=x-2 end
- 	if (btn(➡️)) then x=x+2 end
- 	if (btn(⬆️)) then y=y-2 end
- 	if (btn(⬇️)) then y=y+2 end
+	 self.frame =(self.frame+1)%3
+		if (btn(⬅️)) then self.x=self.x-2 end
+ 	if (btn(➡️)) then self.x=self.x+2 end
+ 	if (btn(⬆️)) then self.y=self.y-2 end
+ 	if (btn(⬇️)) then self.y=self.y+2 end
   if (btn(❎)) then 
-  	z=clamp(z+1,0,10) 
+  	self.z=clamp(self.z+1,0,10) 
   end
   if (btn(🅾️)) then 
-   z=clamp(z-1,0,10) 
+   self.z=clamp(self.z-1,0,10) 
   end
 	end,
 
 	draw=function(self)
-		local drx=x-4
- 	local dry=y-4
-		spr(5,drx+z,dry+z)
-	 spr(frame,
-		 transform(drx,z,64),
-		 transform(dry,z,150))
-  circfill(x,y,4,10)
+		local drx=self.x-4
+ 	local dry=self.y-4
+		spr(5,drx+self.z,dry+self.z)
+	 spr(self.frame,
+		 transform(drx,self.z,64),
+		 transform(dry,self.z,150))
+  
 	end
 }
 
@@ -113,7 +59,7 @@ function _update()
 	dron:update()
 	
 	for _,t in pairs(trees) do
-		t:update()
+		t:update(dron)
 	end
 end
 
@@ -130,12 +76,66 @@ end
 function _init()
  reset()
 end
+
+function reset()
+ for i=0,10 do 
+  add(trees,tree())
+ end 
+end
+
+
 -->8
 function clamp(v,mn,mx)
  return max(mn,min(v,mx))
 end
 
 
+-->8
+-- trees
+
+trees={}
+
+function tree()
+	local tree = {
+  x=flr(rnd(128)),
+  y=flr(rnd(128)),
+
+  update = function(self,d)
+ 	 self.y=(self.y+1)%128
+ 	 local distsq=(d.x-self.x)*(d.x-self.x)+
+	  	(d.y-self.y)*(d.y-self.y)
+	  if distsq<64 then
+	   dead=true
+ 	 end
+  end,
+
+  draw=function(self)
+   drawtree(self.x-4,self.y-4)
+  end
+ }
+	return tree
+end
+
+function drawtree(x,y)
+	for i=6,13 do
+	spr(i,
+		 transform(x,i-6,64),
+		transform(y,i-6,256))
+	end
+end
+
+function drawtreepersp(x,y)
+	for i=6,13 do
+		sspr(48+(i-6)*8,0,8,8,
+			perspective(
+			 transform(x,i-6,64)
+		,y)
+
+			,
+		 transform(y,i-6,256),8*(1+y/100),8*(1+y/100)
+		)
+	end
+end
 __gfx__
 080000808000000880800808008008000000000000000000000000000000000000bbbb0000bbbb00000000000000000000000000000000000000000000000000
 06000060068008600600006086000068060000600100001000044000000440000b3333300b33333000bbb30000bbb300000bb000000000000000000000000000
