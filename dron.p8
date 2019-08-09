@@ -31,7 +31,7 @@ function _draw()
 		t:draw()
 	end
 
- print(stat(1),0,0,7)	
+ print(score,0,0,7)	
 end
 
 function _init()
@@ -45,6 +45,7 @@ function reset()
 	fnc= fence()
  dron = drone() 
  gates={}
+ score=0
  for i=0,10 do  
   local t=tree()
   add(trees,t)
@@ -253,11 +254,27 @@ end
 --gate
 function gate()
  return {
+  passed=false,
   x=flr(rnd(128)),
   y=flr(rnd(128)),
-	update=function(self)
+	
+	update=function(self,d)
 	 movedown(self,1)
+	 self:collision(d)
 	end,
+	
+	collision=function(self,d)
+	if abs(self.y-d.y)<3 
+	   and	d.z < 3
+	   and d.x>=self.x
+	   and d.x<self.x+16
+	   and not self.passed
+		 then			 
+	   score+=1
+	   self.passed=true
+	  end
+	end,
+	
 	draw=function(self)
 	 for i=0,128,8 do
 	  spr(15,self.x-8,self.y)
