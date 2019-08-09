@@ -12,14 +12,14 @@ function _update()
 
 	dron:update()
  for _,g in pairs(gates) do
-  g:update()
+  g:update(dron)
  end
  	
 	for _,t in pairs(trees) do
 		t:update(dron)
 	end
 	
-	fnc:update()
+	fnc:update(dron)
 	
 	ce_heap_sort(drawthings)
 end
@@ -45,7 +45,7 @@ function reset()
 	fnc= fence()
  dron = drone() 
  gates={}
- for i=0,25 do  
+ for i=0,10 do  
   local t=tree()
   add(trees,t)
   add(drawthings,t)  
@@ -132,15 +132,19 @@ function tree()
   x=flr(rnd(128)),
   y=flr(rnd(128)),
 
-  update = function(self,d)
- 	 movedown(self,1)
- 	 local distsq=(d.x-self.x)*(d.x-self.x)+
+		collision=function(self,d)
+		 	 local distsq=(d.x-self.x)*(d.x-self.x)+
 	  	(d.y-self.y)*(d.y-self.y)
 	  if distsq<64 then
 	   dead=true
  	 end
+		end,
+		
+  update = function(self,d)
+ 	 movedown(self,1)
+ 	 self:collision(d)
   end,
-
+  
   draw=function(self)
    drawtree(self.x-4,self.y-4)
   end
@@ -173,8 +177,17 @@ end
 function fence()
  return {
 	y =-rnd(256),
-	update=function(self)
+		collision=function(self,d)
+		 if abs(self.y-d.y)<3 and 
+		 d.z < 3
+		 then			 
+	   dead=true
+	  end
+		end,
+
+	update=function(self,d)
 		movedown(self,1)
+		self:collision(d)
 	end,
 	draw=function(self)
 	 for i=0,128,8 do
