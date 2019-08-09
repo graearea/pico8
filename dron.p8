@@ -3,8 +3,7 @@ version 18
 __lua__
 x=64 y=64 z=3
 dron = 0
-tree1x=32 tree1y=0
-tree2x=96 tree2y=0
+dead=false
 
 trees={}
 
@@ -13,7 +12,7 @@ function clamp(v,mn,mx)
 end
 
 function _init()
- for i=0,50 do 
+ for i=0,5 do 
   add(trees,{
    x=flr(rnd(128)),
    y=flr(rnd(128))
@@ -23,11 +22,19 @@ end
 
 function _update()
 	dron =(dron+1)%3
-	tree1y=(tree1y+1)%128
-	tree2y=(tree2y+1)%128
 	
 	for _,t in pairs(trees) do
 	 t.y=(t.y+1)%128
+	 
+	 --check collision with dron
+	 -- x and y are for dron
+	 local distsq=(x-t.x)*(x-t.x)+
+	 	(y-t.y)*(y-t.y)
+	 
+	 if distsq<64 then
+	  dead=true
+	  foo[2]=2
+	 end
 	end
 	
 	if (btn(⬅️)) then x=x-2 end
@@ -46,13 +53,18 @@ function _draw()
 	cls(2)
 		
 	for _,t in pairs(trees) do
-		drawtree(t.x,t.y)
+		drawtree(t.x-4,t.y-4)
+		circfill(t.x,t.y,4,15)
 	end
+	
+	local drx=x-4
+	local dry=y-4
 
-	spr(5,x+z,y+z)
+	spr(5,drx+z,dry+z)
 	spr(dron,
-		transform(x,z,64),
-		transform(y,z,150))
+		transform(drx,z,64),
+		transform(dry,z,150))
+ circfill(x,y,4,10)
 end
 
 
