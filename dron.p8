@@ -58,9 +58,9 @@ end
 function drawtree(x,y)
 	for i=6,14 do
 	spr(i,
-		--perspective(
-		 transform(x,i-6,64),
-		 --,y),
+		perspective(
+		 transform(x,i-6,64)
+		 ,y),
 		transform(y,i-6,96))
 	end
 end
@@ -71,11 +71,13 @@ function transform(x,z,center)
 end
 
 function perspective(x,y)
- printh("incoming x" .. x)
-	offset = y/100
-	drift=  (x)*(offset+1)
-	printh("drift x" .. drift)
-	return drift
+ printh("incoming " .. x)
+	offset = y/10
+	printh("offset " .. offset)
+	if x<64 then
+	  return x-(offset*offset)/10
+ else return x+(offset*offset)/10
+ end 
 end
 
 
