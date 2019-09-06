@@ -5,6 +5,7 @@ __lua__
 
 dead=false
 speed=1
+track_length=512
 
 function _update()
 	if dead then 
@@ -71,7 +72,7 @@ function clamp(v,mn,mx)
 end
 
 function movedown(thing)
- thing.y=(thing.y+speed)%128
+ thing.y=(thing.y+speed)%track_length
 end
 
 --drawing decorators
@@ -92,6 +93,58 @@ function perspective(x,y)
  end 
 end
 
+--heapsort stolen from @morgan3d
+
+function ce_heap_sort(data)
+ local n = #data
+
+ -- form a max heap
+ for i = flr(n / 2) + 1, 1, -1 do
+  -- m is the index of the max child
+  local parent, value, m = i, data[i], i + i
+  local y = value.y
+
+  while m <= n do
+   -- find the max child
+   if ((m < n) and (data[m + 1].y > data[m].y)) m += 1
+   local mval = data[m]
+   if (y > mval.y) break
+   data[parent] = mval
+   parent = m
+   m += m
+  end
+  data[parent] = value
+ end
+
+ -- read out the values,
+ -- restoring the heap property
+ -- after each step
+ for i = n, 2, -1 do
+  -- swap root with last
+  local value = data[i]
+  data[i], data[1] = data[1], value
+
+  -- restore the heap
+  local parent, terminate, m = 1, i - 1, 2
+  local y = value.y
+
+  while m <= terminate do
+   local mval = data[m]
+   local my = mval.y
+   if (m < terminate) and (data[m + 1].y > my) then
+    m += 1
+    mval = data[m]
+    my = mval.y
+   end
+   if (y > my) break
+   data[parent] = mval
+   parent = m
+   m += m
+  end
+
+  data[parent] = value
+ end
+end
 -->8
 -- drone
 
@@ -106,8 +159,8 @@ return
 	 self.frame =(self.frame+1)%3
 		if (btn(⬅️)) then self.dx=self.dx-1 end
  	if (btn(➡️)) then self.dx=self.dx+1 end
- 	if (btn(❎)) then speed=clamp(speed+0.5,0,2) end
- 	if (btn(🅾️)) then speed=clamp(speed-0.5,0,2) end
+ 	if (btn(❎)) then speed=2 end
+ 	if (btn(🅾️)) then speed=1 end
   if (btn(⬆️)) then 
   	self.z=clamp(self.z+1,0,10) 
   end
@@ -186,7 +239,7 @@ end
 --fence
 function fence()
  return {
-	y =-rnd(256),
+	y =-rnd(128),
 		collision=function(self,d)
 		 if abs(self.y-d.y)<3 and 
 		 d.z < 3
@@ -211,59 +264,6 @@ function fence()
 	 end
 	end
 }
-end
--->8
---heapsort stolen from @morgan3d
-
-function ce_heap_sort(data)
- local n = #data
-
- -- form a max heap
- for i = flr(n / 2) + 1, 1, -1 do
-  -- m is the index of the max child
-  local parent, value, m = i, data[i], i + i
-  local y = value.y
-
-  while m <= n do
-   -- find the max child
-   if ((m < n) and (data[m + 1].y > data[m].y)) m += 1
-   local mval = data[m]
-   if (y > mval.y) break
-   data[parent] = mval
-   parent = m
-   m += m
-  end
-  data[parent] = value
- end
-
- -- read out the values,
- -- restoring the heap property
- -- after each step
- for i = n, 2, -1 do
-  -- swap root with last
-  local value = data[i]
-  data[i], data[1] = data[1], value
-
-  -- restore the heap
-  local parent, terminate, m = 1, i - 1, 2
-  local y = value.y
-
-  while m <= terminate do
-   local mval = data[m]
-   local my = mval.y
-   if (m < terminate) and (data[m + 1].y > my) then
-    m += 1
-    mval = data[m]
-    my = mval.y
-   end
-   if (y > my) break
-   data[parent] = mval
-   parent = m
-   m += m
-  end
-
-  data[parent] = value
- end
 end
 -->8
 --gate
