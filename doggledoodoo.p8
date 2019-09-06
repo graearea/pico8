@@ -21,11 +21,8 @@ end
 
 function _draw()
   rectfill(0,0,127,127,3)
-  doggleframe=(doggle.walk%3)%2
   butcherframe=(butcher.walk%3%2)+5
-  sspr(doggleframe*8,0,8,8,
-   doggle.x,doggle.y,
-   8,8,doggle.goingleft)
+  doggle:draw()
   sspr(butcherframe*8,0,8,8,
    butcher.x,butcher.y,
    8,8,butcher.goingleft)
@@ -73,6 +70,12 @@ function doggle()
   	self.walk+=1
   end  
 
+ end,
+ draw = function(self)
+  local doggleframe=(self.walk%3)%2
+  sspr(doggleframe*8,0,8,8,
+   self.x,self.y,
+   8,8,self.goingleft)
  end
  }
 end
