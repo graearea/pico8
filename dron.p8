@@ -4,6 +4,7 @@ __lua__
 -- pico8 callbacks, game state
 
 dead=false
+speed=1
 
 function _update()
 	if dead then 
@@ -16,10 +17,10 @@ function _update()
  end
  	
 	for _,t in pairs(trees) do
-		t:update(dron)
+		t:update(dron,dron)
 	end
 	
-	fnc:update(dron)
+	fnc:update(dron,dron)
 	
 	ce_heap_sort(drawthings)
 end
@@ -69,8 +70,8 @@ function clamp(v,mn,mx)
  return max(mn,min(v,mx))
 end
 
-function movedown(thing,velocity)
- thing.y=(thing.y+velocity)%128
+function movedown(thing)
+ thing.y=(thing.y+speed)%128
 end
 
 --drawing decorators
@@ -97,25 +98,26 @@ end
 function drone()
 return
 {
- x=64, y=64, z=3,
+ x=64, y=96, z=3,
+ speed=1,
  dx=0, dy=0,
  frame = 0,
 	update = function(self)
 	 self.frame =(self.frame+1)%3
 		if (btn(⬅️)) then self.dx=self.dx-1 end
  	if (btn(➡️)) then self.dx=self.dx+1 end
- 	if (btn(⬆️)) then self.dy=self.dy-1 end
- 	if (btn(⬇️)) then self.dy=self.dy+1 end
-  if (btn(❎)) then 
+ 	if (btn(❎)) then speed=clamp(speed+0.5,0,2) end
+ 	if (btn(🅾️)) then speed=clamp(speed-0.5,0,2) end
+  if (btn(⬆️)) then 
   	self.z=clamp(self.z+1,0,10) 
   end
-  if (btn(🅾️)) then 
+  if (btn(⬇️)) then 
    self.z=clamp(self.z-1,0,10) 
   end
   
   self.x=self.x+clamp(self.dx/4,-2,2)
-  self.y=self.y+clamp(self.dy/4,-2,2)
-  self.dy=self.dy*0.90
+  
+  
   self.dx=self.dx*0.90
 	end,
 
@@ -149,7 +151,7 @@ function tree()
 		end,
 		
   update = function(self,d)
- 	 movedown(self,1)
+ 	 movedown(self)
  	 self:collision(d)
   end,
   
@@ -194,9 +196,10 @@ function fence()
 		end,
 
 	update=function(self,d)
-		movedown(self,1)
+		movedown(self)
 		self:collision(d)
 	end,
+	
 	draw=function(self)
 	 for x=0,128,8 do
 	 	for i=31,38 do
@@ -271,7 +274,7 @@ function gate()
   y=flr(rnd(128)),
 	
 	update=function(self,d)
-	 movedown(self,1)
+	 movedown(self)
 	 self:collision(d)
 	end,
 	
