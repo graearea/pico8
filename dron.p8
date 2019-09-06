@@ -98,19 +98,25 @@ function drone()
 return
 {
  x=64, y=64, z=3,
+ dx=0, dy=0,
  frame = 0,
 	update = function(self)
 	 self.frame =(self.frame+1)%3
-		if (btn(⬅️)) then self.x=self.x-2 end
- 	if (btn(➡️)) then self.x=self.x+2 end
- 	if (btn(⬆️)) then self.y=self.y-2 end
- 	if (btn(⬇️)) then self.y=self.y+2 end
+		if (btn(⬅️)) then self.dx=self.dx-1 end
+ 	if (btn(➡️)) then self.dx=self.dx+1 end
+ 	if (btn(⬆️)) then self.dy=self.dy-1 end
+ 	if (btn(⬇️)) then self.dy=self.dy+1 end
   if (btn(❎)) then 
   	self.z=clamp(self.z+1,0,10) 
   end
   if (btn(🅾️)) then 
    self.z=clamp(self.z-1,0,10) 
   end
+  
+  self.x=self.x+clamp(self.dx/4,-2,2)
+  self.y=self.y+clamp(self.dy/4,-2,2)
+  self.dy=self.dy*0.90
+  self.dx=self.dx*0.90
 	end,
 
 	draw=function(self)
