@@ -16,15 +16,18 @@ end
 
 function circle()
  for i = 0, 10 do 
-  x = flr(rnd(128))
-  y = flr(rnd(128))
+  x = flr(rnd(256))
+  y = flr(rnd(256))
   
   add(blobs,{x,y})
  end
 end  
 
 function _draw()
-  rectfill(0,0,127,127,15)
+  camera(car.x-64,car.y-64)
+  rectfill(0,0,1024,1027,15)
+   circfill(128,128,96,6)
+   circfill(128,128,64,15)
   
   for i= 1,10 do
    circfill(blobs[i][1],blobs[i][2],2,10)
@@ -33,11 +36,6 @@ function _draw()
   
   circle()
   car:draw()
---  print("dx:"..round(car.speed*cos(car.angle),1),0,120)
---  print("dy:"..round(car.speed*sin(car.angle),1),32,120)
---  print("spd:"..car.speed,64,120)
---  print("a:"..car.a,96,120)  
-  print(blobs[1])
 end
 function printstatus(text)
  print(text)
