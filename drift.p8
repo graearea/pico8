@@ -4,21 +4,40 @@ __lua__
 function _init()
 
 car=car(64,64) 
+blobs={}
+circle()
 end
-
+	
 function _update()
   if (btn(⬅️)) then car.a-=10 end
   if (btn(➡️)) then car.a+=10 end
   car:move()
 end
 
+function circle()
+ for i = 0, 10 do 
+  x = flr(rnd(128))
+  y = flr(rnd(128))
+  
+  add(blobs,{x,y})
+ end
+end  
+
 function _draw()
   rectfill(0,0,127,127,15)
+  
+  for i= 1,10 do
+   circfill(blobs[i][1],blobs[i][2],2,10)
+
+  end
+  
+  circle()
   car:draw()
-  print("dx:"..round(car.speed*cos(car.angle),1),0,120)
-  print("dy:"..round(car.speed*sin(car.angle),1),32,120)
-  print("spd:"..car.speed,64,120)
-  print("a:"..car.a,96,120)  
+--  print("dx:"..round(car.speed*cos(car.angle),1),0,120)
+--  print("dy:"..round(car.speed*sin(car.angle),1),32,120)
+--  print("spd:"..car.speed,64,120)
+--  print("a:"..car.a,96,120)  
+  print(blobs[1])
 end
 function printstatus(text)
  print(text)
@@ -33,7 +52,7 @@ function car(ix,iy)
 	a=0,
 	x=ix,
 	y=iy,
-	speed=0,
+	speed=1,
 	move=function(self,v)
 		dx=(self.speed*cos(-self.a/360))
   dy=(self.speed*sin(-self.a/360))
