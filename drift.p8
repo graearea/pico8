@@ -46,14 +46,17 @@ function car(ix,iy)
   dy=(self.speed*sin(-self.d_travel/360))
   self.x=self.x+dx
   self.y=self.y+dy
-  add(self.skidmarks,{x=self.x,y=self.y})
+  
+  self:draw_skidmarks()
 	end	,
 
+ draw_skidmarks=function(self)
+  add(self.skidmarks,{x=self.x,y=self.y})
+ end,
+
 	draw=function(self)
-	 print("bob",self.x+64,self.y+120)
-	 for sx,sy in pairs(self.skidmarks) do
-	 	print(self.x,self.y)
-		 circfill(sx,sy,1,4) 
+	 for b,skid in pairs(self.skidmarks) do
+		 circfill(skid.x,skid.y,1,4) 
 	 end
 	 spr_r(0,self.x,self.y,self.angle)
  end
