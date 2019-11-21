@@ -5,6 +5,8 @@ function _init()
 
 car=car(64,64) 
 blobs={}
+window_x=0
+window_y=0
 end
 
 	
@@ -15,7 +17,9 @@ function _update()
 end
 
 function _draw()
-  camera(car.x-58,car.y-58)
+  window_x=car.x-58
+  window_y=car.y-58
+  camera(window_x,window_y)
   rectfill(0,0,1024,1027,15)
   map(0, 0, 0, 0, 1024, 32)
   circfill(128,128,96,6)
@@ -32,10 +36,15 @@ function round(num,places)
 -->8
 --car
 --10,8 10,20
-
+bob="asd"
+function pr(x,y)
+ bob=x.." "..y
+end
 function draw_px(x,y,colour)
  pset(x,y,colour)
 end
+
+
 
 function car(ix,iy)
 	return {
@@ -53,29 +62,38 @@ function car(ix,iy)
   dy=(self.speed*sin(-self.d_travel/360))
   self.x=self.x+dx
   self.y=self.y+dy  
-  --self:draw_skidmarks(self.draw_px)
-	 self:add_skid()
+	 self:add_skid(6,7)
+	 --self:add_skid(-6,7)
 	end,	
 
 	draw=function(self)
+	local prevx=nil 
+	local prevy=nil
 	 for b,skid in pairs(self.skidmarks) do
-		 circfill(skid.x,skid.y,1,4) 
+	 	if(prevx != nil) do 
+	   line(prevx,prevy,skid.x,skid.y,4)
+	  end
+		 --circfill(skid.x,skid.y,1,4) 
+		 prevx=skid.x
+		 prevy=skid.y
 	 end
 	 spr_r(0,self.x,self.y,self.angle, draw_px)
+  print(bob,window_x,window_y) 
  end,
-
-	add_skid=function(self)
+ 
+	add_skid=function(self,x,y)
 --10,10 22,10
-	 local dx=10
-	 local dy=10
+	 local dx=x
+	 local dy=y
 	 local tx=self.x
 	 local ty=self.y
-	 local sa=sin(self.angle)
-	 local ca=cos(self.angle)
+	 local ca=sin(self.angle/360)
+	 local sa=cos(self.angle/360)
 	 xx=flr(dx*ca-dy*sa+tx)--transofrmed val
 	 yy=flr(dx*sa+dy*ca+ty)
-	 add(self.skids,{x=xx-16,y=yy-16})
-	 
+		pr(sa,ca)
+			 
+	 add(self.skidmarks,{x=xx,y=yy})
 	end
 
 	}
