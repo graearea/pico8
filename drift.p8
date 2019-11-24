@@ -23,7 +23,7 @@ function _draw()
   rectfill(0,0,1024,1027,15)
   map(0, 0, 0, 0, 1024, 32)
   circfill(128,128,96,6)
-   circfill(128,128,64,15)
+  circfill(128,128,64,15)
   car:draw()
   
 end
@@ -35,16 +35,17 @@ function round(num,places)
  end
 -->8
 --car
---10,8 10,20
 bob="asd"
+skids_l={}
+skids_r={}
+
 function pr(x,y)
  bob=x.." "..y
 end
+
 function draw_px(x,y,colour)
  pset(x,y,colour)
 end
-
-
 
 function car(ix,iy)
 	return {
@@ -53,7 +54,6 @@ function car(ix,iy)
 	x=ix,
 	y=iy,
 	speed=3,
-	skidmarks={},
 
 	move=function(self,v)
 	 delta_angle= self.d_travel-self.angle
@@ -61,28 +61,40 @@ function car(ix,iy)
 		dx=(self.speed*cos(-self.d_travel/360))
   dy=(self.speed*sin(-self.d_travel/360))
   self.x=self.x+dx
-  self.y=self.y+dy  
-	 self:add_skid(6,7)
-	 --self:add_skid(-6,7)
+  self.y=self.y+dy 
+  printh("adding skids") 
+	 self:add_skid(skids_r,6,7)
+	 self:add_skid(skids_l,-6,7)
+	 printh("added" .. skids_l[1].x.. ","..skids_l[1].y)
 	end,	
 
 	draw=function(self)
-	local prevx=nil 
-	local prevy=nil
-	 for b,skid in pairs(self.skidmarks) do
+	 printh("drawing skids") 
+	 printh("added" .. skids_l[1].x.. ","..skids_l[1].y)
+	 self:draw_skids(skids_l)
+	 self:draw_skids(skids_r)
+	 spr_r(0,self.x,self.y,self.angle, draw_px)
+  
+ end,
+ 
+ draw_skids=function(self,skiddies)
+ 	local prevx=nil 
+	 local prevy=nil
+   printh(count(skiddies))
+	 for b,skid in pairs(skiddies) do
 	 	if(prevx != nil) do 
 	   line(prevx,prevy,skid.x,skid.y,4)
 	  end
 		 --circfill(skid.x,skid.y,1,4) 
+--   printh(skid)
+--   printh(b ..":".. skid.x)
+--   printh(b .. skid.y)
 		 prevx=skid.x
 		 prevy=skid.y
 	 end
-	 spr_r(0,self.x,self.y,self.angle, draw_px)
-  print(bob,window_x,window_y) 
  end,
  
-	add_skid=function(self,x,y)
---10,10 22,10
+	add_skid=function(self,skids,x,y)
 	 local dx=x
 	 local dy=y
 	 local tx=self.x
@@ -92,8 +104,8 @@ function car(ix,iy)
 	 xx=flr(dx*ca-dy*sa+tx)--transofrmed val
 	 yy=flr(dx*sa+dy*ca+ty)
 		pr(sa,ca)
-			 
-	 add(self.skidmarks,{x=xx,y=yy})
+		local skd={x=xx,y=yy}
+	 add(skids,skd)
 	end
 
 	}
