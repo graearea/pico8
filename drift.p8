@@ -1,6 +1,7 @@
 pico-8 cartridge // http://www.pico-8.com
 version 18
 __lua__
+-- main
 function _init()
 
 car=car(64,64) 
@@ -33,8 +34,12 @@ end
 function round(num,places)
   return flr(num*10^places)/10^places
  end
+ 
+function clamp(v,mn,mx)
+ return max(mn,min(v,mx))
+end
 -->8
---car
+-- car
 bob="asd"
 skids_l={}
 skids_r={}
@@ -54,18 +59,23 @@ function car(ix,iy)
 	x=ix,
 	y=iy,
 	speed=3,
-
+ vel_x=1,
+ vel_y=1,
 	move=function(self,v)
+	
 	 delta_angle= self.d_travel-self.angle
-	 self.d_travel= self.d_travel-delta_angle/40
-		dx=(self.speed*cos(-self.d_travel/360))
-  dy=(self.speed*sin(-self.d_travel/360))
-  self.x=self.x+dx
-  self.y=self.y+dy 
-  printh("adding skids") 
+	 self.d_travel= self.d_travel-delta_angle/30
+	 -- pr(flr(delta_angle), flr(self.d_travel))
+
+		dx=(self.vel_x*cos(-self.d_travel/360))
+  dy=(self.vel_y*sin(-self.d_travel/360))
+  
+  self.x=self.x+clamp(dx,-3,3)
+  self.y=self.y+clamp(dy,-3,3) 
+
+		-- add skids
 	 self:add_skid(skids_r,6,7)
 	 self:add_skid(skids_l,-6,7)
-	 printh("added" .. skids_l[1].x.. ","..skids_l[1].y)
 	end,	
 
 	draw=function(self)
@@ -74,7 +84,7 @@ function car(ix,iy)
 	 self:draw_skids(skids_l)
 	 self:draw_skids(skids_r)
 	 spr_r(0,self.x,self.y,self.angle, draw_px)
-  
+  print(bob,self.x-58,self.y-58)
  end,
  
  draw_skids=function(self,skiddies)
@@ -103,7 +113,6 @@ function car(ix,iy)
 	 local sa=cos(self.angle/360)
 	 xx=flr(dx*ca-dy*sa+tx)--transofrmed val
 	 yy=flr(dx*sa+dy*ca+ty)
-		pr(sa,ca)
 		local skd={x=xx,y=yy}
 	 add(skids,skd)
 	end
@@ -137,6 +146,19 @@ function spr_r(s,x,y,a,fn)
   end
 end
  
+-->8
+-- todo
+-- support for tiled mapsections
+-- create track that can be created 
+-- ghost car that can be followed
+-- accelerator and brake
+-- buttons for small big turns that match small big corners?
+-- how to deal with >360< problem
+-- what should accelerator do?
+-- drift angle directly function of accelerator
+-- direction of travel just down to steering
+-- move pivot point of car forward
+
 __gfx__
 00000000000000000000000000000000003000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 000000000000000000000000000000000000000000000200000000000000a0000000000000000000000000000000000000000000000000000000000000000000
