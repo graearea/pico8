@@ -59,20 +59,28 @@ function car(ix,iy)
 	x=ix,
 	y=iy,
 	speed=3,
- vel_x=1,
- vel_y=1,
+ dx=1,
+ dy=1,
+ acc=0.2,
+ max_dx=2,
+ max_dy=2,
+ 
 	move=function(self,v)
-	
+	 local dx=self.dx
+  local dy=self.dy
 	 delta_angle= self.d_travel-self.angle
 	 self.d_travel= self.d_travel-delta_angle/30
-	 -- pr(flr(delta_angle), flr(self.d_travel))
 
-		dx=(self.vel_x*cos(-self.d_travel/360))
-  dy=(self.vel_y*sin(-self.d_travel/360))
+		dx=(1*cos(-self.d_travel/360))*3
+  dy=(1*sin(-self.d_travel/360))*3
+  pr(dx,dy)
   
-  self.x=self.x+clamp(dx,-3,3)
-  self.y=self.y+clamp(dy,-3,3) 
-
+  dx=clamp(dx,-self.max_dx,self.max_dx)
+  dy=clamp(dy,-self.max_dy,self.max_dy)
+  self.x=self.x+dx
+  self.y=self.y+dy
+  self.dx=dx
+  self.dy=dy
 		-- add skids
 	 self:add_skid(skids_r,6,7)
 	 self:add_skid(skids_l,-6,7)
@@ -90,15 +98,10 @@ function car(ix,iy)
  draw_skids=function(self,skiddies)
  	local prevx=nil 
 	 local prevy=nil
-   printh(count(skiddies))
 	 for b,skid in pairs(skiddies) do
 	 	if(prevx != nil) do 
 	   line(prevx,prevy,skid.x,skid.y,4)
 	  end
-		 --circfill(skid.x,skid.y,1,4) 
---   printh(skid)
---   printh(b ..":".. skid.x)
---   printh(b .. skid.y)
 		 prevx=skid.x
 		 prevy=skid.y
 	 end
