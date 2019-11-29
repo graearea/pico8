@@ -59,8 +59,8 @@ function car(ix,iy)
 	x=ix,
 	y=iy,
 	speed=3,
- dx=1,
- dy=1,
+ dx=0,
+ dy=0,
  acc=0.2,
  max_dx=2,
  max_dy=2,
@@ -68,15 +68,23 @@ function car(ix,iy)
 	move=function(self,v)
 	 local dx=self.dx
   local dy=self.dy
-	 delta_angle= self.d_travel-self.angle
-	 self.d_travel= self.d_travel-delta_angle/30
+	 --delta_angle= self.d_travel-self.angle
+	 --self.d_travel= self.d_travel-delta_angle/30
+		max_dx=6--abs(5*cos(-self.angle/360))
+  max_dy=6--abs(5*sin(-self.angle/360))
 
-		dx=(1*cos(-self.d_travel/360))*3
-  dy=(1*sin(-self.d_travel/360))*3
-  pr(dx,dy)
+		new_dx=(5*cos(-self.angle/360))
+  new_dy=(5*sin(-self.angle/360))
+		delta_dx=(new_dx-dx)/50
+		dx=dx+delta_dx
+		delta_dy=(new_dy-dy)/50
+		dy=dy+delta_dy
+   pr(dx,dy)
+
+--  pr(max_dx,max_dy)
   
-  dx=clamp(dx,-self.max_dx,self.max_dx)
-  dy=clamp(dy,-self.max_dy,self.max_dy)
+  dx=clamp(dx,-max_dx,max_dx)
+  dy=clamp(dy,-max_dy,max_dy)
   self.x=self.x+dx
   self.y=self.y+dy
   self.dx=dx
@@ -100,7 +108,7 @@ function car(ix,iy)
 	 local prevy=nil
 	 for b,skid in pairs(skiddies) do
 	 	if(prevx != nil) do 
-	   line(prevx,prevy,skid.x,skid.y,4)
+	   line(prevx,prevy,skid.x,skid.y,0)
 	  end
 		 prevx=skid.x
 		 prevy=skid.y
