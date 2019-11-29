@@ -12,8 +12,18 @@ end
 
 	
 function _update()
-  if (btn(⬅️)) then car.angle-=10 end
-  if (btn(➡️)) then car.angle+=10 end
+  if (btn(⬅️)) then 
+   car.steer=clamp(car.steer-1,-10,10)  
+  elseif (btn(➡️)) then 
+   car.steer=clamp(car.steer+1,-10,10)
+  else
+--   if(car.steer>0) then car.steer-=1 end
+  -- if(car.steer<0) then car.steer+=1 end
+  end
+  
+  
+  car.angle=car.angle+car.steer
+  pr(car.steer,1)
   car:move()
 end
 
@@ -56,6 +66,7 @@ function car(ix,iy)
 	return {
 	d_travel=0,
 	angle=0,
+	steer=0,
 	x=ix,
 	y=iy,
 	speed=3,
@@ -79,9 +90,6 @@ function car(ix,iy)
 		dx=dx+delta_dx
 		delta_dy=(new_dy-dy)/50
 		dy=dy+delta_dy
---   pr(dx,dy)
-
---  pr(max_dx,max_dy)
   
   dx=clamp(dx,-max_dx,max_dx)
   dy=clamp(dy,-max_dy,max_dy)
@@ -89,7 +97,7 @@ function car(ix,iy)
   self.y=self.y+dy
   local speed =flr(speed_of(dx,dy))
   sfx(speed+1)
-  pr(speed,1)
+
   self.dx=dx
   self.dy=dy
   
