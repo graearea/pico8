@@ -30,8 +30,8 @@ function _update()
   end
   
   car.angle=car.angle+car.steer
-  pr(car.steer,1)
   car:move()
+  bob=car:is_hitting_wall()
 end
 
 function _draw()
@@ -40,10 +40,11 @@ function _draw()
   camera(window_x,window_y)
   rectfill(0,0,1024,1027,15)
   map(0, 0, 0, 0, 1024, 64)
-		draw_track()
   car:draw()
   camera()
-  print(mget(car.x/8,car.y/8)>8,0,0,11)
+  --print(car:is_hitting_wall())
+  print(bob)
+--  print(mget(car.x/8,car.y/8)>8,0,0,11)
 end
 
 function printstatus(text)
@@ -63,11 +64,6 @@ bob="asd"
 skids_l={}
 skids_r={}
 
-
-function pr(x,y)
- bob=x.." "..y
-end
-
 function draw_px(x,y,colour)
  pset(x,y,colour)
 end
@@ -86,13 +82,26 @@ function car(ix,iy)
  max_dx=2,
  max_dy=2,
  r_wheels={{y=6,x=7},{y=-6,x=7}},
--- f_wheels=[{x=6,y=-7},{-6,-7},
+ f_wheels={{y=6,x=-7},{y=-6,x=-7}},
  
  is_hitting_wall=function(self)
-   --get wheel positions
-   --check if they're on the wall sprite
-   
-   return true
+   sprite= mget(self.x/8,self.y/8)
+			bob=(sprite==59)
+   if sprite==59 then
+   -- self.dy=0
+   -- return true
+   end
+
+   for wheel in all(self.r_wheels) do
+   bob=wheel
+			 sprite=mget(wheel.x/8,wheel.y/8)
+			 
+			 if(sprite==59) do 
+    self.dy=0
+			  return true
+			 end
+   end   
+   return false
  end,
  
 	move=function(self,v)
@@ -238,11 +247,6 @@ end
 -- move pivot point of car forward
 
 -->8
-function draw_track()
--- arc(80)
--- circfill(128,128,96,6)
--- circfill(128,128,64,15)
-end
 
 
 __gfx__
