@@ -44,8 +44,8 @@ function _draw()
   car:draw()
   camera()
   print(mget(car.x/8,car.y/8)>8,0,0,11)
-  
 end
+
 function printstatus(text)
  print(text)
 end
@@ -85,6 +85,15 @@ function car(ix,iy)
  acc=0.2,
  max_dx=2,
  max_dy=2,
+ r_wheels={{y=6,x=7},{y=-6,x=7}},
+-- f_wheels=[{x=6,y=-7},{-6,-7},
+ 
+ is_hitting_wall=function(self)
+   --get wheel positions
+   --check if they're on the wall sprite
+   
+   return true
+ end,
  
 	move=function(self,v)
 	 local dx=self.dx
@@ -132,12 +141,11 @@ function car(ix,iy)
   
 		-- add skids
 		if (skidding) then
-		 self:add_skid(skids_r,6,7,true)
-		 self:add_skid(skids_l,-6,7,true)
+	  self:add_skid(skids_r,self.r_wheels[1],true)
+	  self:add_skid(skids_l,self.r_wheels[2],true)
 		else
-		 self:add_skid(skids_r,6,7,false)
-		 self:add_skid(skids_l,-6,7,false)
-
+	  self:add_skid(skids_r,self.r_wheels[1],false)
+   self:add_skid(skids_l,self.r_wheels[2],false)
 		end
 		
 	end,	
@@ -160,24 +168,28 @@ function car(ix,iy)
 		 prevy=skid.y
 	 end
  end,
- 
-	add_skid=function(self,skids,x,y,add_it)
+
+ rotate_wheel_posn=function(self,x,y,angle)
 	 local dx=x
 	 local dy=y
 	 local tx=self.x
 	 local ty=self.y
-	 local ca=sin(self.angle/360)
-	 local sa=cos(self.angle/360)
+	 local ca=sin(angle/360)
+	 local sa=cos(angle/360)
 	 xx=flr(dx*ca-dy*sa+tx)--transofrmed val
 	 yy=flr(dx*sa+dy*ca+ty)
-		local skd={x=xx,y=yy}
+		local locn={x=xx,y=yy}
+		return locn
+ end,
+ 
+	add_skid=function(self,skids,pos,add_it)
+		skd=self.rotate_wheel_posn(self,pos.y,pos.x,self.angle)
 	 if(add_it) then
-	 add(skids,skd)
+ 	 add(skids,skd)
 	 else
-	 add(skids,{x=nil,y=nil})
+	  add(skids,{x=nil,y=nil})
 	 end
 	end
-
 	}
 end
 
