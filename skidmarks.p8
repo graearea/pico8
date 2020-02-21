@@ -31,7 +31,6 @@ function _update()
   
   car.angle=car.angle+car.steer
   car:move()
-  bob=car:is_hitting_wall()
 end
 
 function _draw()
@@ -84,20 +83,20 @@ function car(ix,iy)
  r_wheels={{y=6,x=7},{y=-6,x=7}},
  f_wheels={{y=6,x=-7},{y=-6,x=-7}},
  
- is_hitting_wall=function(self)
-   sprite= mget(self.x/8,self.y/8)
+ would_hit_wall=function(self,dx,dy)
+   sprite= mget((self.x+dx)/8,(self.y+dy)/8)
 			bob=(sprite==59)
    if sprite==59 then
-   -- self.dy=0
-   -- return true
+    
+    return true
    end
 
    for wheel in all(self.r_wheels) do
-   bob=wheel
+    locn=self:rotate_wheel_posn(self,wheel)
 			 sprite=mget(wheel.x/8,wheel.y/8)
 			 
 			 if(sprite==59) do 
-    self.dy=0
+     self.dy=0
 			  return true
 			 end
    end   
@@ -123,8 +122,12 @@ function car(ix,iy)
  end
   dx=clamp(dx,-max_dx,max_dx)
   dy=clamp(dy,-max_dy,max_dy)
+  if self:would_hit_wall(dx,dy) then
+   dy=0
+  else 
+   self.y=self.y+dy
+  end
   self.x=self.x+dx
-  self.y=self.y+dy
   local speed =flr(speed_of(dx,dy))
   sfx(speed*2+1)
   
@@ -178,13 +181,13 @@ function car(ix,iy)
 	 end
  end,
 
- rotate_wheel_posn=function(self,x,y,angle)
-	 local dx=x
-	 local dy=y
+ rotate_wheel_posn=function(self,pos)
+	 local dx=pos.y
+	 local dy=pos.x
 	 local tx=self.x
 	 local ty=self.y
-	 local ca=sin(angle/360)
-	 local sa=cos(angle/360)
+	 local ca=sin(self.angle/360)
+	 local sa=cos(self.angle/360)
 	 xx=flr(dx*ca-dy*sa+tx)--transofrmed val
 	 yy=flr(dx*sa+dy*ca+ty)
 		local locn={x=xx,y=yy}
@@ -192,7 +195,7 @@ function car(ix,iy)
  end,
  
 	add_skid=function(self,skids,pos,add_it)
-		skd=self.rotate_wheel_posn(self,pos.y,pos.x,self.angle)
+		skd=self.rotate_wheel_posn(self,pos)
 	 if(add_it) then
  	 add(skids,skd)
 	 else
