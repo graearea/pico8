@@ -13,11 +13,11 @@ handbrake=false
 end
 
 	
-function _update()
+function _update60()
   if (btn(⬅️)) then 
-   car.steer=clamp(car.steer-1,-10,10)  
+   car.steer=clamp(car.steer-0.5,-5,5)  
   elseif (btn(➡️)) then 
-   car.steer=clamp(car.steer+1,-10,10)
+   car.steer=clamp(car.steer+0.5,-5,5)
   else
    if(car.steer>0) then car.steer-=1 end
    if(car.steer<0) then car.steer+=1 end
@@ -37,14 +37,15 @@ function _draw()
   window_x=car.x-58
   window_y=car.y-58
   camera(window_x,window_y)
-  rectfill(0,0,1024,1027,15)
+  rectfill(-100,-100,1024,1027,15)
   map(0, 0, 0, 0, 1024, 64)
 	 draw_skids(skids_l)
 	 draw_skids(skids_r)
   car:draw()
   camera()
+  --print(#skids_l .."▒ " ..stat(7).. "✽".. stat(1))
   --print(car:is_hitting_wall())
-  print(bob)
+  --print(bob)
 --  print(mget(car.x/8,car.y/8)>8,0,0,11)
 end
 
@@ -113,14 +114,14 @@ function car(ix,iy)
 	move=function(self,v)
 	 local dx=self.dx
   local dy=self.dy
-		local max_dx=6
-  local max_dy=6
+		local max_dx=3
+  local max_dy=3
 
-		new_dx=(5*cos(-self.angle/360))
-  new_dy=(5*sin(-self.angle/360))
+		local new_dx=(3*cos(-self.angle/360))
+  local new_dy=(3*sin(-self.angle/360))
   
-		delta_dx=(new_dx-dx)/50
-		delta_dy=(new_dy-dy)/50
+		local delta_dx=(new_dx-dx)/50
+		local delta_dy=(new_dy-dy)/50
   if (not handbrake) do
  		dx=dx+delta_dx
  		dy=dy+delta_dy
