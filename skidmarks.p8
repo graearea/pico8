@@ -39,12 +39,28 @@ function _draw()
   camera(window_x,window_y)
   rectfill(0,0,1024,1027,15)
   map(0, 0, 0, 0, 1024, 64)
+	 draw_skids(skids_l)
+	 draw_skids(skids_r)
   car:draw()
   camera()
   --print(car:is_hitting_wall())
   print(bob)
 --  print(mget(car.x/8,car.y/8)>8,0,0,11)
 end
+
+
+ function draw_skids(skiddies)
+ 	local prevx=nil 
+	 local prevy=nil
+	 for skid in all(skiddies) do
+	 	if(prevx != nil and skid.x !=nil ) do 
+	 	
+	   line(prevx,prevy,skid.x,skid.y,0)
+	  end
+		 prevx=skid.x
+		 prevy=skid.y
+	 end
+ end
 
 function printstatus(text)
  print(text)
@@ -80,27 +96,15 @@ function car(ix,iy)
  acc=0.2,
  max_dx=2,
  max_dy=2,
- r_wheels={{y=6,x=7,l="br"},{y=-6,x=7,l="bl"}},
- f_wheels={{y=6,x=-7,l="fr"},{y=-6,x=-7,l="fl"}},
+ r_wheels={{y=6,x=7,l="br"},{y=-6,x=7,l="bl"},{y=6,x=-7,l="fr"},{y=-6,x=-7,l="fl"}},
  
  would_hit_wall=function(self,dx,dy)
-   sprite= mget((self.x+dx)/8,(self.y+dy)/8)
---			bob=(sprite==59)
-   if sprite==59 then
-    
---    return true
-   end
-
    for wheel in all(self.r_wheels) do
     wheel_pos={x=self.x+wheel.x,y=self.y+wheel.y}
-    locn=self:rotate_wheel_posn(self,wheel)
-    bob="x:" .. wheel_pos.x .. "y:".. wheel_pos.y
+    locn=self:rotate_wheel_posn(wheel)
+
  		 sprite=mget(locn.x/8,locn.y/8)
-    printh(wheel.l)
-			 printh("x:" .. locn.x .. "y:" .. locn.y)
-			 printh("x:" .. wheel_pos.x .. "y:" .. wheel_pos.y)
-			 if(sprite==59) do 
-     self.dy=0
+			 if(sprite==59) do   
 			  return true
 			 end
    end   
@@ -110,27 +114,25 @@ function car(ix,iy)
 	move=function(self,v)
 	 local dx=self.dx
   local dy=self.dy
-	 --delta_angle= self.d_travel-self.angle
-	 --self.d_travel= self.d_travel-delta_angle/30
-		max_dx=6--abs(5*cos(-self.angle/360))
-  max_dy=6--abs(5*sin(-self.angle/360))
+		local max_dx=6
+  local max_dy=6
 
 		new_dx=(5*cos(-self.angle/360))
   new_dy=(5*sin(-self.angle/360))
   
 		delta_dx=(new_dx-dx)/50
 		delta_dy=(new_dy-dy)/50
- if (not handbrake) do
-		dx=dx+delta_dx
-		dy=dy+delta_dy
- end
+  if (not handbrake) do
+ 		dx=dx+delta_dx
+ 		dy=dy+delta_dy
+  end
   dx=clamp(dx,-max_dx,max_dx)
   dy=clamp(dy,-max_dy,max_dy)
   if self:would_hit_wall(dx,dy) then
-   dy=0
-  else 
-   self.y=self.y+dy
+   dy=clamp(dy,0,10)
   end
+ 
+  self.y=self.y+dy 
   self.x=self.x+dx
   local speed =flr(speed_of(dx,dy))
   sfx(speed*2+1)
@@ -150,8 +152,7 @@ function car(ix,iy)
   end
   
   self.dx=dx
-  self.dy=dy
-  
+  self.dy=dy  
   
 		-- add skids
 		if (skidding) then
@@ -165,24 +166,10 @@ function car(ix,iy)
 	end,	
 
 	draw=function(self)
-	 self:draw_skids(skids_l)
-	 self:draw_skids(skids_r)
 	 spr_r(0,self.x,self.y,self.angle, draw_px)
   --print(bob,self.x-58,self.y-58)
  end,
  
- draw_skids=function(self,skiddies)
- 	local prevx=nil 
-	 local prevy=nil
-	 for b,skid in pairs(skiddies) do
-	 	if(prevx != nil and skid.x !=nil ) do 
-	   line(prevx,prevy,skid.x,skid.y,0)
-	  end
-		 prevx=skid.x
-		 prevy=skid.y
-	 end
- end,
-
  rotate_wheel_posn=function(self,pos)
 	 local dx=pos.y
 	 local dy=pos.x
@@ -193,7 +180,7 @@ function car(ix,iy)
 	 xx=flr(dx*ca-dy*sa+tx)--transofrmed val
 	 yy=flr(dx*sa+dy*ca+ty)
 		local locn={x=xx,y=yy}
-		printh(locn.x..","..locn.y)
+		printh("➡️"..locn.x..","..locn.y)
 		return locn
  end,
  
