@@ -80,21 +80,25 @@ function car(ix,iy)
  acc=0.2,
  max_dx=2,
  max_dy=2,
- r_wheels={{y=6,x=7},{y=-6,x=7}},
- f_wheels={{y=6,x=-7},{y=-6,x=-7}},
+ r_wheels={{y=6,x=7,l="br"},{y=-6,x=7,l="bl"}},
+ f_wheels={{y=6,x=-7,l="fr"},{y=-6,x=-7,l="fl"}},
  
  would_hit_wall=function(self,dx,dy)
    sprite= mget((self.x+dx)/8,(self.y+dy)/8)
-			bob=(sprite==59)
+--			bob=(sprite==59)
    if sprite==59 then
     
-    return true
+--    return true
    end
 
    for wheel in all(self.r_wheels) do
+    wheel_pos={x=self.x+wheel.x,y=self.y+wheel.y}
     locn=self:rotate_wheel_posn(self,wheel)
-			 sprite=mget(wheel.x/8,wheel.y/8)
-			 
+    bob="x:" .. wheel_pos.x .. "y:".. wheel_pos.y
+ 		 sprite=mget(locn.x/8,locn.y/8)
+    printh(wheel.l)
+			 printh("x:" .. locn.x .. "y:" .. locn.y)
+			 printh("x:" .. wheel_pos.x .. "y:" .. wheel_pos.y)
 			 if(sprite==59) do 
      self.dy=0
 			  return true
@@ -134,8 +138,6 @@ function car(ix,iy)
   angle=self.angle%360
   dangle=(flr(atan2(self.dy,self.dx)*360)+90)%360
   diffangle = abs(dangle-angle)
-  printh(abs(dangle-angle) .."an:"..angle .. " dan:" .. dangle .. " " .. self.angle%360)
-  
   
   if (diffangle>20) then
    skidding=true
@@ -191,6 +193,7 @@ function car(ix,iy)
 	 xx=flr(dx*ca-dy*sa+tx)--transofrmed val
 	 yy=flr(dx*sa+dy*ca+ty)
 		local locn={x=xx,y=yy}
+		printh(locn.x..","..locn.y)
 		return locn
  end,
  
