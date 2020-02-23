@@ -11,6 +11,7 @@ window_x=0
 window_y=0
 handbrake=false
 timer=0
+dust={}
 end
 
 	
@@ -32,6 +33,11 @@ function _update60()
   timer+=1
   car.angle=car.angle+car.steer
   car:move()
+  
+  for d in all(dust) do
+   d:update()
+  end
+
 end
 
 function _draw()
@@ -43,10 +49,19 @@ function _draw()
 	 draw_skids(skids_l)
 	 draw_skids(skids_r)
   car:draw()
-  camera()
-  print(stat(7) .." " ..flr(timer/60))
+  printh(bob)
+  for d in all(dust) do
+   d:draw()
+  end
+
+--  camera()
 end
 
+function create_smoke(pos)
+ bob=(pos.x .. pos.y)
+ add_new_dust(pos.x,pos.y,rnd(2),rnd(2),15,rnd(2)+2,0.0,7)
+
+end
 
  function draw_skids(skiddies)
  	local prevx=nil 
@@ -73,7 +88,7 @@ function clamp(v,mn,mx)
 end
 -->8
 -- car
-bob=""
+bob="bob"
 skids_l={}
 skids_r={}
 
@@ -184,6 +199,7 @@ function car(ix,iy)
 		local skd=self.rotate_wheel_posn(self,pos)
 	 if(add_it) then
  	 add(skids,skd)
+ 	 create_smoke(skd)
 	 else
 	  add(skids,{x=nil,y=nil})
 	 end
@@ -236,6 +252,80 @@ end
 -- move pivot point of car forward
 
 -->8
+-- add_new_dust(
+-- pos.x,
+-- pos.y,
+-- rnd(2),
+-- rnd(2),
+-- 15,
+-- rnd(6)+2,
+-- 0.0,
+-- 7)
+
+function add_new_dust(_x,_y,_dx,_dy,_l,_s,_g,_f)
+    add(dust, {
+        fade=_f,
+     x=_x,
+     y=_y,
+     dx=_dx,
+     dy=_dy,
+     life=_l,
+     orig_life=_l,
+     rad=_s,
+     col=7, --set to color
+     grav=0,
+     draw=function(self)
+         --this function takes care
+         --of drawing the particle
+        
+         --clear the palette
+         pal()
+         palt()
+        
+         --draw the particle
+         circfill(self.x,self.y,self.rad,self.col)
+     end,
+     update=function(self)
+         --this is the update function
+        
+         --move the particle based on
+         --the speed
+         self.x+=self.dx
+         self.y+=self.dy
+         --and gravity
+         self.dy+=self.grav
+        
+         --reduce the radius
+         --this is set to 90%, but
+         --could be altered
+         self.rad*=0.9
+        
+         --reduce the life
+         self.life-=1
+        
+         --set the color
+         if type(self.fade)=="table" then
+             --assign color from fade
+             --this code works out how
+             --far through the lifespan
+             --the particle is and then
+             --selects the color from the
+             --table
+             self.col=self.fade[flr(#self.fade*(self.life/self.orig_life))+1]
+            else
+                --just use a fixed color
+                self.col=self.fade            
+         end
+         
+         --if the dust has exceeded
+         --its lifespan, delete it
+         --from the table
+         if self.life<0 then
+             del(dust,self)
+         end
+     end
+ })
+end
 
 
 __gfx__
