@@ -71,10 +71,9 @@ function draw_skids(skiddies)
  local prevy=nil
  for skid in all(skiddies) do
  	if(prevx != nil and skid.x !=nil ) do 
-   if (window_x<skid.x and window_x+128>skid.x) then
-    if (window_y<skid.y and window_y+128>skid.y) then
+   if (window_x-10<skid.x and window_x+138>skid.x) then
+    if (window_y-10<skid.y and window_y+138>skid.y) then
     ops+=1
-     rect(window_x,window_y,window_x+127,window_y+124,14)
      line(prevx,prevy,skid.x,skid.y,0)
     end
    end
@@ -83,7 +82,7 @@ function draw_skids(skiddies)
 	 prevy=skid.y
  end  
  bob=#skiddies .. " " ..ops
- bob= "cpu" ..stat(1) .." ".. stat(7)
+ bob=bob .. "cpu" ..stat(1) .." ".. stat(7)
 end
 
 function round(num,places)
@@ -100,6 +99,7 @@ end
 bob=""
 skids_l={}
 skids_r={}
+alternate=0
 
 function draw_px(x,y,colour)
  pset(x,y,colour)
@@ -177,8 +177,12 @@ function car(ix,iy)
   
   self.dx=dx
   self.dy=dy  
-  
 		-- add skids
+		self:add_skids()
+	end,	
+	
+	add_skids=function(self)
+			if(alternate%4==0) then
 		if (skidding) then
 	  self:add_skid(skids_r,self.r_wheels[1],true)
 	  self:add_skid(skids_l,self.r_wheels[2],true)
@@ -190,8 +194,10 @@ function car(ix,iy)
    end
    was_skidding=false
 		end
-		
-	end,	
+		end
+   alternate+=1
+
+	end, 
 
 	draw=function(self)
 	 spr_r(0,self.x,self.y,self.angle, draw_px)
