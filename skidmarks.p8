@@ -48,21 +48,17 @@ function _draw()
   map(0, 0, 0, 0, 1024, 64)
 	 draw_skids(skids_l)
 	 draw_skids(skids_r)
-  car:draw()
-  if bob!="" then printh(bob) end
   for d in all(dust) do
    d:draw()
   end
+  car:draw()
+  if bob!="" then printh(bob) end
 
 --  camera()
 end
 
 function to_pos(xx,yy)
  return {x=xx,y=yy}
-end
-
-function create_smoke(pos,locn)
- add_new_dust(pos.x,pos.y,locn.x,locn.y,10,rnd(2)+2,0.0,7)
 end
 
 function draw_skids(skiddies)
@@ -73,7 +69,7 @@ function draw_skids(skiddies)
  	if(prevx != nil and skid.x !=nil ) do 
    if (window_x-10<skid.x and window_x+138>skid.x) then
     if (window_y-10<skid.y and window_y+138>skid.y) then
-    ops+=1
+     ops+=1
      line(prevx,prevy,skid.x,skid.y,0)
     end
    end
@@ -81,8 +77,8 @@ function draw_skids(skiddies)
 	 prevx=skid.x
 	 prevy=skid.y
  end  
- bob=#skiddies .. " " ..ops
- bob=bob .. "cpu" ..stat(1) .." ".. stat(7)
+-- bob=#skiddies .. " " ..ops
+-- bob=bob .. "cpu" ..stat(1) .." ".. stat(7)
 end
 
 function round(num,places)
@@ -141,17 +137,18 @@ function car(ix,iy)
 		local max_dx=3
   local max_dy=3
 
-		new_dx=(3*cos(-self.angle/360))
-  new_dy=(3*sin(-self.angle/360))
+		self.new_dx=(3*cos(-self.angle/360))
+  self.new_dy=(3*sin(-self.angle/360))
   
-		local delta_dx=(new_dx-dx)/50
-		local delta_dy=(new_dy-dy)/50
+		local delta_dx=(self.new_dx-dx)/50
+		local delta_dy=(self.new_dy-dy)/50
   if (not handbrake) do
  		dx=dx+delta_dx
  		dy=dy+delta_dy
   end
   dx=clamp(dx,-max_dx,max_dx)
   dy=clamp(dy,-max_dy,max_dy)
+
   if self:would_hit_wall(dx,dy) then
    dy=clamp(dy,0,10)
   end
@@ -186,6 +183,7 @@ function car(ix,iy)
 		if (skidding) then
 	  self:add_skid(skids_r,self.r_wheels[1],true)
 	  self:add_skid(skids_l,self.r_wheels[2],true)
+	  --add_new_dust
 	  was_skidding=true
 		else 
 		 if (was_skidding) then
@@ -219,7 +217,8 @@ function car(ix,iy)
 		local skd=self.rotate_wheel_posn(self,pos)
 	 if(add_it) then
  	 add(skids,skd)
- 	 create_smoke(skd,to_pos(self.new_dx,self.new_dy))
+ 	 bob=self.dx..":"..self.new_dx.." ".. self.dy ..":" ..self.new_dy
+ 	 create_smoke(skd,to_pos(self.new_dx/2,self.new_dy/2))
 	 else
 	  add(skids,{x=nil,y=nil})
 	 end
@@ -282,6 +281,11 @@ end
 -- 0.0,
 -- 7)
 
+function create_smoke(pos,locn)
+ --bob="x:
+ add_new_dust(pos.x,pos.y,locn.x,locn.y,10,rnd(2)+2,0.0,7)
+end
+
 function add_new_dust(_x,_y,_dx,_dy,_l,_s,_g,_f)
     add(dust, {
      x=_x,
@@ -304,7 +308,7 @@ function add_new_dust(_x,_y,_dx,_dy,_l,_s,_g,_f)
       self.y+=self.dy*0.7
       self.dy+=self.grav
         
-      self.rad*=1
+      self.rad*=1.1
       self.life-=1
         
       self.col=self.fade            
