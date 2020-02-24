@@ -44,12 +44,12 @@ function _draw()
   window_x=car.x-58
   window_y=car.y-58
   camera(window_x,window_y)
-  rectfill(-100,-100,1024,1027,15)
+  rectfill(-200,-200,1024,1027,15)
   map(0, 0, 0, 0, 1024, 64)
 	 draw_skids(skids_l)
 	 draw_skids(skids_r)
   car:draw()
-  printh(bob)
+  if bob!="" then printh(bob) end
   for d in all(dust) do
    d:draw()
   end
@@ -65,21 +65,26 @@ function create_smoke(pos,locn)
  add_new_dust(pos.x,pos.y,locn.x,locn.y,10,rnd(2)+2,0.0,7)
 end
 
- function draw_skids(skiddies)
- 	local prevx=nil 
-	 local prevy=nil
-	 for skid in all(skiddies) do
-	 	if(prevx != nil and skid.x !=nil ) do 
-    if (window_x<skid.x and window_x+128>skid.x) then
-     if (window_y<skid.y and window_y+128>skid.y) then
-	     line(prevx,prevy,skid.x,skid.y,0)
-	    end
-	   end
-	  end
-		 prevx=skid.x
-		 prevy=skid.y
-	 end
- end
+function draw_skids(skiddies)
+ local ops=0
+	local prevx=nil 
+ local prevy=nil
+ for skid in all(skiddies) do
+ 	if(prevx != nil and skid.x !=nil ) do 
+   if (window_x<skid.x and window_x+128>skid.x) then
+    if (window_y<skid.y and window_y+128>skid.y) then
+    ops+=1
+     rect(window_x,window_y,window_x+127,window_y+124,14)
+     line(prevx,prevy,skid.x,skid.y,0)
+    end
+   end
+  end
+	 prevx=skid.x
+	 prevy=skid.y
+ end  
+ bob=#skiddies .. " " ..ops
+ bob= "cpu" ..stat(1) .." ".. stat(7)
+end
 
 function round(num,places)
   return flr(num*10^places)/10^places
@@ -92,7 +97,7 @@ end
 
 -->8
 -- car
-bob="bob"
+bob=""
 skids_l={}
 skids_r={}
 
@@ -177,9 +182,13 @@ function car(ix,iy)
 		if (skidding) then
 	  self:add_skid(skids_r,self.r_wheels[1],true)
 	  self:add_skid(skids_l,self.r_wheels[2],true)
-		else
-	  self:add_skid(skids_r,self.r_wheels[1],false)
-   self:add_skid(skids_l,self.r_wheels[2],false)
+	  was_skidding=true
+		else 
+		 if (was_skidding) then
+ 	  self:add_skid(skids_r,self.r_wheels[1],false)
+    self:add_skid(skids_l,self.r_wheels[2],false)
+   end
+   was_skidding=false
 		end
 		
 	end,	
