@@ -21,8 +21,8 @@ function _update60()
   elseif (btn(➡️)) then 
    car.steer=clamp(car.steer+0.5,-5,5)
   else
-   if(car.steer>0) then car.steer-=1 end
-   if(car.steer<0) then car.steer+=1 end
+   if(car.steer>0) then car.steer-=0.5 end
+   if(car.steer<0) then car.steer+=0.5 end
   end
 
   if (btn(❎)) then 
@@ -57,10 +57,12 @@ function _draw()
 --  camera()
 end
 
-function create_smoke(pos)
- bob=(pos.x .. pos.y)
- add_new_dust(pos.x,pos.y,rnd(2),rnd(2),15,rnd(2)+2,0.0,7)
+function to_pos(xx,yy)
+ return {x=xx,y=yy}
+end
 
+function create_smoke(pos,locn)
+ add_new_dust(pos.x,pos.y,locn.x,locn.y,10,rnd(2)+2,0.0,7)
 end
 
  function draw_skids(skiddies)
@@ -86,6 +88,8 @@ function round(num,places)
 function clamp(v,mn,mx)
  return max(mn,min(v,mx))
 end
+
+
 -->8
 -- car
 bob="bob"
@@ -103,6 +107,8 @@ function car(ix,iy)
 	steer=0,
 	x=ix,
 	y=iy,
+	new_dx=ix,
+	new_dy=iy,
 	speed=5,
  dx=0,
  dy=0,
@@ -130,8 +136,8 @@ function car(ix,iy)
 		local max_dx=3
   local max_dy=3
 
-		local new_dx=(3*cos(-self.angle/360))
-  local new_dy=(3*sin(-self.angle/360))
+		new_dx=(3*cos(-self.angle/360))
+  new_dy=(3*sin(-self.angle/360))
   
 		local delta_dx=(new_dx-dx)/50
 		local delta_dy=(new_dy-dy)/50
@@ -145,14 +151,14 @@ function car(ix,iy)
    dy=clamp(dy,0,10)
   end
  
-  self.y=self.y+dy 
   self.x=self.x+dx
+  self.y=self.y+dy 
   local speed =flr(speed_of(dx,dy))
   sfx(speed*2+1)
   
-  angle=self.angle%360
-  dangle=(flr(atan2(self.dy,self.dx)*360)+90)%360
-  diffangle = abs(dangle-angle)
+  local angle=self.angle%360
+  local dangle=(flr(atan2(self.dy,self.dx)*360)+90)%360
+  local diffangle = abs(dangle-angle)
   
   if (diffangle>20) then
    skidding=true
@@ -180,7 +186,6 @@ function car(ix,iy)
 
 	draw=function(self)
 	 spr_r(0,self.x,self.y,self.angle, draw_px)
-  --print(bob,self.x-58,self.y-58)
  end,
  
  rotate_wheel_posn=function(self,pos)
@@ -190,8 +195,8 @@ function car(ix,iy)
 	 local ty=self.y
 	 local ca=sin(self.angle/360)
 	 local sa=cos(self.angle/360)
-	 xx=flr(dx*ca-dy*sa+tx)--transofrmed val
-	 yy=flr(dx*sa+dy*ca+ty)
+	 local xx=flr(dx*ca-dy*sa+tx)--transofrmed val
+	 local yy=flr(dx*sa+dy*ca+ty)
 		return {x=xx,y=yy}
  end,
  
@@ -199,7 +204,7 @@ function car(ix,iy)
 		local skd=self.rotate_wheel_posn(self,pos)
 	 if(add_it) then
  	 add(skids,skd)
- 	 create_smoke(skd)
+ 	 create_smoke(skd,to_pos(self.new_dx,self.new_dy))
 	 else
 	  add(skids,{x=nil,y=nil})
 	 end
@@ -264,65 +269,33 @@ end
 
 function add_new_dust(_x,_y,_dx,_dy,_l,_s,_g,_f)
     add(dust, {
-        fade=_f,
      x=_x,
      y=_y,
-     dx=_dx,
-     dy=_dy,
+     dx=-_dx,
+     dy=-_dy,
      life=_l,
      orig_life=_l,
      rad=_s,
      col=7, --set to color
      grav=0,
+     fade=_f,
      draw=function(self)
-         --this function takes care
-         --of drawing the particle
-        
-         --clear the palette
-         pal()
-         palt()
-        
-         --draw the particle
-         circfill(self.x,self.y,self.rad,self.col)
+      pal()
+      palt()
+      circfill(self.x,self.y,self.rad,self.col)
      end,
      update=function(self)
-         --this is the update function
+      self.x+=self.dx*0.7
+      self.y+=self.dy*0.7
+      self.dy+=self.grav
         
-         --move the particle based on
-         --the speed
-         self.x+=self.dx
-         self.y+=self.dy
-         --and gravity
-         self.dy+=self.grav
+      self.rad*=1
+      self.life-=1
         
-         --reduce the radius
-         --this is set to 90%, but
-         --could be altered
-         self.rad*=0.9
-        
-         --reduce the life
-         self.life-=1
-        
-         --set the color
-         if type(self.fade)=="table" then
-             --assign color from fade
-             --this code works out how
-             --far through the lifespan
-             --the particle is and then
-             --selects the color from the
-             --table
-             self.col=self.fade[flr(#self.fade*(self.life/self.orig_life))+1]
-            else
-                --just use a fixed color
-                self.col=self.fade            
-         end
-         
-         --if the dust has exceeded
-         --its lifespan, delete it
-         --from the table
-         if self.life<0 then
-             del(dust,self)
-         end
+      self.col=self.fade            
+      if self.life<0 then
+        del(dust,self)
+      end
      end
  })
 end
@@ -340,17 +313,17 @@ __gfx__
 0000000000000000000000000000000000000000dddddddd0000dddddddd0000ddddddd0ddd0000000000ddd0dddddddddd0000000000dddddd0000000000000
 0000000000000000000000000000000000000000dddddddd0000dddddddd0000ddddddd0dd000000000000dd0dddddddddd0000000000dddddd000000000000d
 0000009001111000000001111000000000000000dddddddd0000dddddddd0000dddddd00d00000000000000d00dddddddd000000000000dddd000000000000dd
-0000009099999999999999999990000000000000dddddddd0000dddddddd0000dddddd00000000000000000000dddddddd000000000000dddd00000000000ddd
+0000009999999999999999999990000000000000dddddddd0000dddddddd0000dddddd00000000000000000000dddddddd000000000000dddd00000000000ddd
 00000090899999999911199999700000dddddddd000000000000dddddddd0000ddddd0000000000000000000000dddddd00000000000000dd00000000000dddd
 00000090891199999111199999700000dddddddd000000000000dddddddd0000ddddd0000000000000000000000dddddd00000000000000dd0000000000ddddd
-00000099891199999111199999700000dddddddd000000000000dddddddd0000dddd000000000000000000000000dddd00000000000000000000000000dddddd
-00000099991199999111199999900000dddddddd000000000000dddddddd0000dddd000000000000000000000000dddd0000000000000000000000000ddddddd
-0000009999119999911119999990000000000000000000dddd00000000000000dddddddd77dd77dddddddddd0011110011111111000000000000000000000000
-00000099991199999111199999900000000000000000dddddddd000000000000dddddddd77dd77dddddddddd0111111011111111000000000000000000000000
-000000998911999991111999997000000000000000dddddddddddd0000000000dddddddddd77dddddddddddd1110011111111111000000000000000000000000
+00000090891199999111199999700000dddddddd000000000000dddddddd0000dddd000000000000000000000000dddd00000000000000000000000000dddddd
+00000090991199999111199999900000dddddddd000000000000dddddddd0000dddd000000000000000000000000dddd0000000000000000000000000ddddddd
+0000009099119999911119999990000000000000000000dddd00000000000000dddddddd77dd77dddddddddd0011110011111111000000000000000000000000
+00000090991199999111199999900000000000000000dddddddd000000000000dddddddd77dd77dddddddddd0111111011111111000000000000000000000000
+000000908911999991111999997000000000000000dddddddddddd0000000000dddddddddd77dddddddddddd1110011111111111000000000000000000000000
 0000009089119999911119999970000000000000dddddddddddddddd00000000dddddddddd77dddddddddddd1100001111111111000000000000000000000000
 00000090899999999911199999700000000000dddddddddddddddddddd000000dddddddd77dd77dd00dddddd1100001111111111000000000000000000000000
-000000909999999999999999999000000000dddddddddddddddddddddddd0000dddddddd77dd77dd0000dddd1110011111111111000000000000000000000000
+000000999999999999999999999000000000dddddddddddddddddddddddd0000dddddddd77dd77dd0000dddd1110011111111111000000000000000000000000
 0000009001111000000001111000000000dddddddddddddddddddddddddddd00dddddddddd77dddd000000dd0111111011111111000000000000000000000000
 00000000000000000000000000000000dddddddddddddddddddddddddddddddddddddddddd77dddd000000000011110011111111000000000000000000000000
 0000000000000000000000000000000000000000000dddddddddd000d0000000d000000ddddddddddddddddd1111111111111657ddddd000000ddddd00000000
