@@ -53,10 +53,11 @@ end
 
 function draw_ghost()
  if end_timer==0 then return end
- local pos =ghost[timer-start_timer]
+ local pos =ghost[timer-156]
 
  if pos!=nil then
   ghost_car.angle=pos.angle
+  pal(12,9)
   ghost_car:draw()
   ghost_car.x=pos.x
   ghost_car.y=pos.y
