@@ -3,8 +3,11 @@ version 18
 __lua__
 -- main
 skidding=true
-function _init()
+bob=""
 
+function _init()
+lap_count=1
+laps={}
 ghost_car=car(110,64)
 car=car(70,64) 
 blobs={}
@@ -16,6 +19,9 @@ dust={}
 ghost={}
 start_timer=0
 end_timer=0
+play_ghost=false
+start=42
+finish=41
 end
 
 	
@@ -79,8 +85,38 @@ function _draw()
   end
   car:draw()
   if bob!="" then printh(bob) end
-
 --  camera()
+end
+
+function check_timer()
+ sprite=mget(car.x/8,car.y/8)
+
+ if (sprite==start and timer-start>10) do 
+  add(laps,lap())
+		laps[lap_count].start=timer
+  start_timer=timer 
+ end   
+
+ if timer>100 then
+  if(sprite==finish and timer-finish >10) do 
+			laps[lap_count].finish=timer
+   end_timer=lapstimer 
+   play_ghost=true
+  end   
+ end
+end
+
+function draw_ghost()
+ if not play_ghost and end_timer==0 then return end
+ bob="s:"..laps[lap_count-1].start.."f:"..laps[lap_count-1].finish
+ 
+ local pos =ghost[timer-end_timer+start_timer]
+ if pos!=nil then
+  ghost_car.angle=pos.angle
+  ghost_car:draw()
+  ghost_car.x=pos.x
+  ghost_car.y=pos.y
+ end
 end
 
 function to_pos(xx,yy)
@@ -115,10 +151,15 @@ function clamp(v,mn,mx)
  return max(mn,min(v,mx))
 end
 
+function lap()
+return {
+start=0,
+finish=0
+}
+end
 
 -->8
 -- car
-bob=""
 skids_l={}
 skids_r={}
 alternate=0
@@ -247,7 +288,7 @@ function car(ix,iy)
 		local skd=self.rotate_wheel_posn(self,pos)
 	 if(add_it) then
  	 add(skids,skd)
- 	 bob=self.dx..":"..self.new_dx.." ".. self.dy ..":" ..self.new_dy
+-- 	 bob=self.dx..":"..self.new_dx.." ".. self.dy ..":" ..self.new_dy
  	 create_smoke(skd,to_pos(self.new_dx/2,self.new_dy/2))
 	 else
 	  add(skids,{x=nil,y=nil})
@@ -331,7 +372,16 @@ function add_new_dust(_x,_y,_dx,_dy,_l,_s,_g,_f)
      draw=function(self)
       pal()
       palt()
-      circfill(self.x,self.y,self.rad,self.col)
+      if self.life>3 then
+       fillp() 
+      elseif self.life%2==0 then
+       fillp(0b0101101001011010.1) 
+      else 
+       fillp(0b1010010110100101.1) 
+						end
+      circfill(self.x,self.y,self.rad,6)
+      circfill(self.x,self.y,self.rad-1,self.col)
+      fillp()
      end,
      update=function(self)
       self.x+=self.dx*0.7
