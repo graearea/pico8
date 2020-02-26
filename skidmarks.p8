@@ -17,8 +17,6 @@ handbrake=false
 timer=0
 dust={}
 ghost={}
-start_timer=0
-end_timer=0
 play_ghost=false
 start=42
 finish=41
@@ -48,13 +46,6 @@ function _update60()
    d:update()
   end
   check_timer()
-end
-
-function check_timer()
- sprite=mget(car.x/8,car.y/8)
- if(sprite==42) do start_timer=timer end   
- if(sprite==41) do end_timer=timer end   
-
 end
 
 function draw_ghost()
@@ -91,26 +82,34 @@ end
 function check_timer()
  sprite=mget(car.x/8,car.y/8)
 
- if (sprite==start and timer-start>10) do 
+ if (sprite==start and timer-this_lap().start>20) do 
   add(laps,lap())
 		laps[lap_count].start=timer
-  start_timer=timer 
  end   
 
  if timer>100 then
-  if(sprite==finish and timer-finish >10) do 
+  if(sprite==finish and timer-this_lap().finish >20) do 
 			laps[lap_count].finish=timer
    end_timer=lapstimer 
    play_ghost=true
+   lap_count+=1
   end   
+ end
+-- print("grr")
+ for lap in all(laps) do
+ bob=("lap:"..lap_count .." " ..lap.start .." ".. lap.finish)
  end
 end
 
+function this_lap()
+ return laps[lap_count]
+end
+
 function draw_ghost()
- if not play_ghost and end_timer==0 then return end
- bob="s:"..laps[lap_count-1].start.."f:"..laps[lap_count-1].finish
- 
- local pos =ghost[timer-end_timer+start_timer]
+ if not play_ghost or this_lap().finish==0 then return end
+ --bob="s:"..laps[lap_count-1].start.."f:"..laps[lap_count-1].finish
+ lap=laps[lap_count-1]
+ local pos =ghost[timer-lap.finish+lap.start]
  if pos!=nil then
   ghost_car.angle=pos.angle
   ghost_car:draw()
