@@ -147,7 +147,7 @@ function draw_skids(skiddies)
    if (window_x-10<skid.x and window_x+138>skid.x) then
     if (window_y-10<skid.y and window_y+138>skid.y) then
      ops+=1
-     if(pget(skid.x,skid.y)==15) then
+     if(pget(skid.x,skid.y)==3) then
       line(prevx,prevy,skid.x,skid.y,4)
      else
       line(prevx,prevy,skid.x,skid.y,0)
