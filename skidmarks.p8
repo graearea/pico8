@@ -92,6 +92,7 @@ function check_timer()
  sprite=mget(car.x/8,car.y/8)
 
  if (sprite==start and (this_lap()==nil or timer-this_lap().start>20)) do 
+  printh("start lap")
   lap_count+=1
   local curr_lap=new_lap(timer,lap_count)
   add(laps,curr_lap)
@@ -99,6 +100,7 @@ function check_timer()
  end   
 
  if(sprite==finish and this_lap()!=nil and (timer-this_lap().finish) >20) do 
+  printh("end lap")
   if lap_count!=0 then 
  		this_lap().finish=timer
    play_ghost=true
@@ -106,7 +108,7 @@ function check_timer()
  end
 -- print("grr")
  for lap in all(laps) do
-   bob=("lap:".. lap_count .." " ..lap.start .." ".. lap.finish)
+   --bob=("lap:".. lap_count .." " ..lap.start .." ".. lap.finish)
  end
 end
 
@@ -115,11 +117,17 @@ function this_lap()
 end
 
 function draw_ghost()
- if not play_ghost or this_lap().finish==0 then return end
+ if not play_ghost then return end
  --bob="s:"..laps[lap_count-1].start.."f:"..laps[lap_count-1].finish
- lap=this_lap()
+ if lap_count==1 then
+  lap=this_lap()
+ else
+  lap=laps[lap_count-1]
+ end
+ frame =timer-(lap.finish-lap.start)
+ printh("displaying:".. lap_count .." " ..lap.start .." ".. lap.finish .. "frame"..frame)
  
- local pos =ghost[timer-(lap.finish-lap.start)]
+ local pos =ghost[frame]
  if pos!=nil then
   ghost_car.angle=pos.angle
   ghost_car:draw()
