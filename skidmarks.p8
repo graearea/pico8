@@ -45,7 +45,7 @@ function _update60()
   for d in all(dust) do
    d:update()
   end
-  check_timer()
+  record_lap()
 end
 
 function draw_ghost()
@@ -65,7 +65,7 @@ function _draw()
   window_x=car.x-58
   window_y=car.y-58
   camera(window_x,window_y)
-  rectfill(-200,-200,1024,1027,15)
+  rectfill(-200,-200,1024,1027,11)
   map(0, 0, 0, 0, 1024, 64)
 	 draw_skids(skids_l)
 	 draw_skids(skids_r)
@@ -88,7 +88,7 @@ count=cnt
 end
 
 
-function check_timer()
+function record_lap()
  sprite=mget(car.x/8,car.y/8)
 
  if (sprite==start and (this_lap()==nil or timer-this_lap().start>20)) do 
@@ -130,7 +130,12 @@ function draw_ghost()
  local pos =ghost[frame]
  if pos!=nil then
   ghost_car.angle=pos.angle
+--  fillp(0b1000.1) 
+  pal(9,12)
   ghost_car:draw()
+  pal()
+  --pal(12,9)
+--  fillp()
   ghost_car.x=pos.x
   ghost_car.y=pos.y
  end
@@ -149,7 +154,11 @@ function draw_skids(skiddies)
    if (window_x-10<skid.x and window_x+138>skid.x) then
     if (window_y-10<skid.y and window_y+138>skid.y) then
      ops+=1
-     line(prevx,prevy,skid.x,skid.y,0)
+     if(pget(skid.x,skid.y)==15) then
+      line(prevx,prevy,skid.x,skid.y,4)
+     else
+      line(prevx,prevy,skid.x,skid.y,0)
+     end
     end
    end
   end
@@ -339,17 +348,7 @@ function spr_r(s,x,y,a,fn)
 end
  
 -->8
--- todo
--- support for tiled mapsections
--- create track that can be created 
--- ghost car that can be followed
--- accelerator and brake
--- buttons for small big turns that match small big corners?
--- how to deal with >360< problem
--- what should accelerator do?
--- drift angle directly function of accelerator
--- direction of travel just down to steering
--- move pivot point of car forward
+--skids
 
 -->8
 -- add_new_dust(
@@ -380,8 +379,6 @@ function add_new_dust(_x,_y,_dx,_dy,_l,_s,_g,_f)
      grav=0,
      fade=_f,
      draw=function(self)
-      pal()
-      palt()
       if self.life>3 then
        fillp() 
       elseif self.life%2==0 then
@@ -409,6 +406,19 @@ function add_new_dust(_x,_y,_dx,_dy,_l,_s,_g,_f)
  })
 end
 
+
+-->8
+-- todo
+-- support for tiled mapsections
+-- create track that can be created 
+-- ghost car that can be followed
+-- accelerator and brake
+-- buttons for small big turns that match small big corners?
+-- how to deal with >360< problem
+-- what should accelerator do?
+-- drift angle directly function of accelerator
+-- direction of travel just down to steering
+-- move pivot point of car forward
 
 __gfx__
 0000000000000000000000000000000000300000000000000000000000000000dddddddddddddd0000dddddddddddddddddddd00d00000000dddddddddddddd0
