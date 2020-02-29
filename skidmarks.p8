@@ -6,7 +6,7 @@ skidding=true
 bob=""
 
 function _init()
-lap_count=1
+lap_count=0
 laps={}
 ghost_car=car(110,64)
 car=car(70,64) 
@@ -79,37 +79,47 @@ function _draw()
 --  camera()
 end
 
+function new_lap(now,cnt)
+return {
+start=now,
+finish=0,
+count=cnt
+}
+end
+
+
 function check_timer()
  sprite=mget(car.x/8,car.y/8)
 
- if (sprite==start and timer-this_lap().start>20) do 
-  add(laps,lap())
-		laps[lap_count].start=timer
+ if (sprite==start and (this_lap()==nil or timer-this_lap().start>20)) do 
+  lap_count+=1
+  local curr_lap=new_lap(timer,lap_count)
+  add(laps,curr_lap)
+		this_lap().start=timer
  end   
 
- if timer>100 then
-  if(sprite==finish and timer-this_lap().finish >20) do 
-			laps[lap_count].finish=timer
-   end_timer=lapstimer 
+ if(sprite==finish and this_lap()!=nil and (timer-this_lap().finish) >20) do 
+  if lap_count!=0 then 
+ 		this_lap().finish=timer
    play_ghost=true
-   lap_count+=1
   end   
  end
 -- print("grr")
  for lap in all(laps) do
- bob=("lap:"..lap_count .." " ..lap.start .." ".. lap.finish)
+   bob=("lap:".. lap_count .." " ..lap.start .." ".. lap.finish)
  end
 end
 
 function this_lap()
- return laps[lap_count]
+  return laps[lap_count]
 end
 
 function draw_ghost()
  if not play_ghost or this_lap().finish==0 then return end
  --bob="s:"..laps[lap_count-1].start.."f:"..laps[lap_count-1].finish
- lap=laps[lap_count-1]
- local pos =ghost[timer-lap.finish+lap.start]
+ lap=this_lap()
+ 
+ local pos =ghost[timer-(lap.finish-lap.start)]
  if pos!=nil then
   ghost_car.angle=pos.angle
   ghost_car:draw()
@@ -148,13 +158,6 @@ function round(num,places)
  
 function clamp(v,mn,mx)
  return max(mn,min(v,mx))
-end
-
-function lap()
-return {
-start=0,
-finish=0
-}
 end
 
 -->8
