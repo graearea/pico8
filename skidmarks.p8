@@ -65,10 +65,13 @@ function _draw()
   window_x=car.x-58
   window_y=car.y-58
   camera(window_x,window_y)
-  rectfill(-200,-200,1024,1027,11)
+  
+  rectfill(-200,-200,1024,1027,3)
   map(0, 0, 0, 0, 1024, 64)
 	 draw_skids(skids_l)
 	 draw_skids(skids_r)
+	 draw_skids(skids_fl)
+	 draw_skids(skids_fr)
   draw_ghost()
 
   for d in all(dust) do
@@ -81,9 +84,9 @@ end
 
 function new_lap(now,cnt)
 return {
-start=now,
-finish=0,
-count=cnt
+ start=now,
+ finish=0,
+ count=cnt
 }
 end
 
@@ -92,7 +95,6 @@ function record_lap()
  sprite=mget(car.x/8,car.y/8)
 
  if (sprite==start and (this_lap()==nil or timer-this_lap().start>20)) do 
-  printh("start lap")
   lap_count+=1
   local curr_lap=new_lap(timer,lap_count)
   add(laps,curr_lap)
@@ -100,15 +102,10 @@ function record_lap()
  end   
 
  if(sprite==finish and this_lap()!=nil and (timer-this_lap().finish) >20) do 
-  printh("end lap")
   if lap_count!=0 then 
  		this_lap().finish=timer
    play_ghost=true
   end   
- end
--- print("grr")
- for lap in all(laps) do
-   --bob=("lap:".. lap_count .." " ..lap.start .." ".. lap.finish)
  end
 end
 
@@ -119,23 +116,19 @@ end
 function draw_ghost()
  if not play_ghost then return end
  --bob="s:"..laps[lap_count-1].start.."f:"..laps[lap_count-1].finish
+ local lap
  if lap_count==1 then
   lap=this_lap()
  else
   lap=laps[lap_count-1]
  end
- frame =timer-(lap.finish-lap.start)
- printh("displaying:".. lap_count .." " ..lap.start .." ".. lap.finish .. "frame"..frame)
  
- local pos =ghost[frame]
+ local pos =ghost[timer-(lap.finish-lap.start)]
  if pos!=nil then
   ghost_car.angle=pos.angle
---  fillp(0b1000.1) 
   pal(9,12)
   ghost_car:draw()
   pal()
-  --pal(12,9)
---  fillp()
   ghost_car.x=pos.x
   ghost_car.y=pos.y
  end
@@ -181,6 +174,9 @@ end
 -- car
 skids_l={}
 skids_r={}
+skids_fl={}
+skids_fr={}
+
 alternate=0
 
 function draw_px(x,y,colour)
@@ -251,11 +247,16 @@ function car(ix,iy)
   local angle=self.angle%360
   local dangle=(flr(atan2(self.dy,self.dx)*360)+90)%360
   local diffangle = abs(dangle-angle)
-  
-  if (diffangle>20) then
+  front_skids=false
+
+  if (diffangle>90) then
    skidding=true
+   front_skids=true
    sfx(9)
   elseif (diffangle>40) then
+   skidding=true
+   sfx(8)
+  elseif (diffangle>20) then
    skidding=true
    sfx(8)
   else 
@@ -269,22 +270,36 @@ function car(ix,iy)
 	end,	
 	
 	add_skids=function(self)
-			if(alternate%4==0) then
-		if (skidding) then
-	  self:add_skid(skids_r,self.r_wheels[1],true)
-	  self:add_skid(skids_l,self.r_wheels[2],true)
-	  --add_new_dust
-	  was_skidding=true
-		else 
-		 if (was_skidding) then
- 	  self:add_skid(skids_r,self.r_wheels[1],false)
-    self:add_skid(skids_l,self.r_wheels[2],false)
-   end
-   was_skidding=false
-		end
-		end
-   alternate+=1
+		if(alternate%4==0) then
+ 		if (skidding) then
+ 	  self:add_skid(skids_r,self.r_wheels[1],true,true)
+ 	  self:add_skid(skids_l,self.r_wheels[2],true,true)	  
+	   --add_new_dust
+	   was_skidding=true
+		 else 
+		  if (was_skidding) then
+ 	   self:add_skid(skids_r,self.r_wheels[1],false,true)
+     self:add_skid(skids_l,self.r_wheels[2],false,true)
+    end
+    was_skidding=false
+		 end
 
+ 		if (front_skids) then
+ 	  self:add_skid(skids_fr,self.r_wheels[3],true,false)
+ 	  self:add_skid(skids_fl,self.r_wheels[4],true,false)	  
+	   --add_new_dust
+	   was_f_skidding=true
+		 else 
+		  if (was_f_skidding) then
+ 	   self:add_skid(skids_fr,self.r_wheels[3],false,false)
+     self:add_skid(skids_fl,self.r_wheels[4],false,false)
+    end
+    was_f_skidding=false
+		 end
+
+
+		end
+  alternate+=1
 	end, 
 
 	draw=function(self)
@@ -303,12 +318,12 @@ function car(ix,iy)
 		return {x=xx,y=yy}
  end,
  
-	add_skid=function(self,skids,pos,add_it)
+	add_skid=function(self,skids,pos,add_it, add_smoke)
 		local skd=self.rotate_wheel_posn(self,pos)
 	 if(add_it) then
  	 add(skids,skd)
 -- 	 bob=self.dx..":"..self.new_dx.." ".. self.dy ..":" ..self.new_dy
- 	 create_smoke(skd,to_pos(self.new_dx/2,self.new_dy/2))
+ 	 if add_smoke then create_smoke(skd,to_pos(self.new_dx/2,self.new_dy/2)) end
 	 else
 	  add(skids,{x=nil,y=nil})
 	 end
