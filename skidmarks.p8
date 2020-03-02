@@ -20,6 +20,8 @@ ghost={}
 play_ghost=false
 start=42
 finish=41
+   sfx(10,1)
+
 end
 
 	
@@ -46,19 +48,6 @@ function _update60()
    d:update()
   end
   record_lap()
-end
-
-function draw_ghost()
- if end_timer==0 then return end
- local pos =ghost[timer-156]
-
- if pos!=nil then
-  ghost_car.angle=pos.angle
-  pal(12,9)
-  ghost_car:draw()
-  ghost_car.x=pos.x
-  ghost_car.y=pos.y
- end
 end
 
 function _draw()
@@ -112,54 +101,8 @@ end
 function this_lap()
   return laps[lap_count]
 end
-
-function draw_ghost()
- if not play_ghost then return end
- --bob="s:"..laps[lap_count-1].start.."f:"..laps[lap_count-1].finish
- local lap
- if lap_count==1 then
-  lap=this_lap()
- else
-  lap=laps[lap_count-1]
- end
- 
- local pos =ghost[timer-(lap.finish-lap.start)]
- if pos!=nil then
-  ghost_car.angle=pos.angle
-  pal(9,12)
-  ghost_car:draw()
-  pal()
-  ghost_car.x=pos.x
-  ghost_car.y=pos.y
- end
-end
-
 function to_pos(xx,yy)
  return {x=xx,y=yy}
-end
-
-function draw_skids(skiddies)
- local ops=0
-	local prevx=nil 
- local prevy=nil
- for skid in all(skiddies) do
- 	if(prevx != nil and skid.x !=nil ) do 
-   if (window_x-10<skid.x and window_x+138>skid.x) then
-    if (window_y-10<skid.y and window_y+138>skid.y) then
-     ops+=1
-     if(pget(skid.x,skid.y)==3) then
-      line(prevx,prevy,skid.x,skid.y,4)
-     else
-      line(prevx,prevy,skid.x,skid.y,0)
-     end
-    end
-   end
-  end
-	 prevx=skid.x
-	 prevy=skid.y
- end  
--- bob=#skiddies .. " " ..ops
--- bob=bob .. "cpu" ..stat(1) .." ".. stat(7)
 end
 
 function round(num,places)
@@ -255,15 +198,17 @@ function car(ix,iy)
   if (diffangle>90) then
    skidding=true
    front_skids=true
-   sfx(9)
+--   sfx(9)
 --   sfx(10)
 --   sfx(11)
   elseif (diffangle>40) then
    skidding=true
-   sfx(8)
+   sfx(8,2)
+   sfx(12,1)
   elseif (diffangle>20) then
    skidding=true
-   sfx(8)
+   sfx(8,2)
+   sfx(12,1)
   else 
    skidding=false
   end
@@ -367,6 +312,52 @@ end
  
 -->8
 --skids
+
+function draw_ghost()
+ if not play_ghost then return end
+ --bob="s:"..laps[lap_count-1].start.."f:"..laps[lap_count-1].finish
+ local lap
+ if lap_count==1 then
+  lap=this_lap()
+ else
+  lap=laps[lap_count-1]
+ end
+ 
+ local pos =ghost[timer-(lap.finish-lap.start)]
+ if pos!=nil then
+  ghost_car.angle=pos.angle
+  pal(9,12)
+  ghost_car:draw()
+  pal()
+  ghost_car.x=pos.x
+  ghost_car.y=pos.y
+ end
+end
+
+function draw_skids(skiddies)
+ local ops=0
+	local prevx=nil 
+ local prevy=nil
+ for skid in all(skiddies) do
+ 	if(prevx != nil and skid.x !=nil ) do 
+   if (window_x-10<skid.x and window_x+138>skid.x) then
+    if (window_y-10<skid.y and window_y+138>skid.y) then
+     ops+=1
+     if(pget(skid.x,skid.y)==3) then
+      line(prevx,prevy,skid.x,skid.y,4)
+     else
+      line(prevx,prevy,skid.x,skid.y,0)
+     end
+    end
+   end
+  end
+	 prevx=skid.x
+	 prevy=skid.y
+ end  
+-- bob=#skiddies .. " " ..ops
+-- bob=bob .. "cpu" ..stat(1) .." ".. stat(7)
+end
+
 
 -->8
 -- add_new_dust(
@@ -611,8 +602,9 @@ __sfx__
 011000030b1540b1540b1540000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 00020000253502e450253502d450253502e4500000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 00020000253202e420253202d420253202e4200000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-010600002715032150361503a1503f1503f1003d1503f1503f1003d1503f150001003d1503f150001003d1503f150001003d1503f150001003d1503f150001003d1503f150001003d1503f150001003d1503f150
+0006000003350083500c3501035014350193501b35001300193501a3400135005350093500d350103501435017350193501b35000300183501a3500a3000435006350093500e3501235016350193501b35000000
 010600002765032650366503a6503f6503f6003d6503f6503f6003d6503f650006003d6503f650006003d6503f650006003d6503f650006003d6503f650006003d6503f650006003d6503f650006003d6503f650
+00060006193501b35000000193501b350000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 __music__
 03 01424344
 
