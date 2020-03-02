@@ -343,7 +343,8 @@ function draw_skids(skiddies)
    if (window_x-10<skid.x and window_x+138>skid.x) then
     if (window_y-10<skid.y and window_y+138>skid.y) then
      ops+=1
-     if(pget(skid.x,skid.y)==3) then
+     local floor=pget(skid.x,skid.y)
+     if(floor==3 or floor==4 or floor==0) then
       line(prevx,prevy,skid.x,skid.y,4)
      else
       line(prevx,prevy,skid.x,skid.y,0)
