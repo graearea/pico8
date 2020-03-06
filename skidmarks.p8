@@ -27,8 +27,11 @@ print_skids(skids_l)
 end
 	
 function drawstart()
-rectfill(0,0,128,128,15)
-print("it's go time",30,30,12)
+rectfill(0,0,128,128,11)
+print("it's dorifto time!",25,30,1)
+print("press x to start ",27,40,1)
+print("hold x for handbrake",20,50,1)
+
 end
 	
 function _update60()
@@ -214,9 +217,6 @@ function car(ix,iy)
   if (diffangle>90) then
    skidding=true
    front_skids=true
---   sfx(9)
---   sfx(10)
---   sfx(11)
   elseif (diffangle>40) then
    skidding=true
    sfx(8,2)
@@ -416,7 +416,9 @@ local spdo_y=window_y+128
  draw_taco(car.speed,spdo_x,spdo_y)
 end
 function draw_taco(speed,x,y)
- print(speed,x,y-6, 1)
+ print(speed,x+4,y-6, 1)
+ circfill(x-5,y,8,0)
+ line(x-5,y,x-5+4,y-4,8)
 end
 -->8
 -- add_new_dust(
