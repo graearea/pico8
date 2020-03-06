@@ -4,7 +4,8 @@ __lua__
 -- main
 skidding=true
 bob=""
-
+started=false
+printed=false
 
 function _init()
 lap_count=0
@@ -21,13 +22,22 @@ ghost={}
 play_ghost=false
 start=42
 finish=41
-sfx(10,1)
+--sfx(10,1)
 print_skids(skids_l)
 end
-
-printed=false
 	
-function _update60()
+function drawstart()
+rectfill(0,0,128,128,15)
+print("it's go time",30,30,12)
+end
+	
+function _update()
+ --do something 
+ drawstart()
+ if(btn(❎)) then
+  started=true
+ end
+ if(started) then
   if (btn(⬅️)) then 
    car.steer=clamp(car.steer-0.5,-5,5)  
   elseif (btn(➡️)) then 
@@ -53,9 +63,11 @@ function _update60()
    d:update()
   end
   record_lap()
+ end
 end
 
 function _draw()
+ if (started) then
   window_x=car.x-58
   window_y=car.y-58
   camera(window_x,window_y)
@@ -73,7 +85,7 @@ function _draw()
   end
   car:draw()
   if bob!="" then printh(bob) end
---  camera()
+ end
 end
 
 function new_lap(now,cnt)
@@ -406,8 +418,7 @@ end
 -- 7)
 
 function create_smoke(pos,direction)
- --bob="x:
- add_new_dust(pos.x,pos.y,direction.x+rnd(0.6)-0.3,direction.y,10,rnd(2)+2,0.0,7)
+ add_new_dust(pos.x,pos.y,direction.x+rnd(0.6)-0.3,direction.y,15,rnd(2)+2,0.0,7)
 end
 
 function add_new_dust(_x,_y,_dx,_dy,_l,_s,_g,_f)
@@ -423,7 +434,7 @@ function add_new_dust(_x,_y,_dx,_dy,_l,_s,_g,_f)
      grav=0,
      fade=_f,
      draw=function(self)
-      if self.life>3 then
+      if self.life>4 then
        fillp() 
       elseif self.life%2==0 then
        fillp(0b0101101001011010.1) 
