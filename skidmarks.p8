@@ -416,10 +416,30 @@ local spdo_y=window_y+128
  draw_taco(car.speed,spdo_x,spdo_y)
 end
 function draw_taco(speed,x,y)
- print(speed,x+4,y-6, 1)
+ print(speed,x+4,y-6,8)
  circfill(x-5,y,8,0)
- line(x-5,y,x-5+4,y-4,8)
+ local taco=calc_taco(speed) 
+ line(x-5,y,x-5+taco.x,y+taco.y,8)
 end
+
+hit_speed=false
+
+function calc_taco(speed)
+if speed>60 then
+ hit_speed=true
+end
+if (hit_speed) then
+ new_speed=20+speed%10
+else
+ new_speed=speed%30
+end
+ local xx=-cos(new_speed*6/360)*5
+ local yy=sin(new_speed*6/360)*5 
+ printh(speed .. " " ..xx .. " " ..yy)
+ return {x=xx,y=yy}
+ 
+end
+
 -->8
 -- add_new_dust(
 -- pos.x,
