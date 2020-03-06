@@ -33,9 +33,11 @@ print("press x to start ",27,40,1)
 print("hold x for handbrake",20,50,1)
 
 end
-	
+score=0	
 function _update60()
  --do something 
+ current_score=(abs(car.angle)*car.speed)/1000
+ score+=current_score
  drawstart()
  if(btn(❎)) then
   started=true
@@ -89,6 +91,7 @@ function _draw()
   car:draw()
   if bob!="" then printh(bob) end
   draw_speedo()
+  print(flr(score),window_x+100,window_y+120,7)
  end
 end
 
