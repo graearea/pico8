@@ -31,7 +31,7 @@ rectfill(0,0,128,128,15)
 print("it's go time",30,30,12)
 end
 	
-function _update()
+function _update60()
  --do something 
  drawstart()
  if(btn(❎)) then
@@ -85,6 +85,7 @@ function _draw()
   end
   car:draw()
   if bob!="" then printh(bob) end
+  draw_speedo()
  end
 end
 
@@ -202,8 +203,8 @@ function car(ix,iy)
  
   self.x=self.x+dx
   self.y=self.y+dy 
-  local speed =flr(speed_of(dx,dy))
-  sfx(speed*2+1)
+  self.speed =flr(speed_of(dx,dy)*30)
+
   
   local angle=self.angle%360
   local dangle=(flr(atan2(self.dy,self.dx)*360)+90)%360
@@ -406,6 +407,17 @@ function print_all_skids()
 
 end
 
+function draw_speedo()
+local rad=20
+local spdo_x=window_x+20
+local spdo_y=window_y+128
+ circ(spdo_x,spdo_y+10,rad+1,1)
+ circfill(spdo_x,spdo_y+10,rad,6)
+ draw_taco(car.speed,spdo_x,spdo_y)
+end
+function draw_taco(speed,x,y)
+ print(speed,x,y-6, 1)
+end
 -->8
 -- add_new_dust(
 -- pos.x,
