@@ -7,7 +7,6 @@ loo_roll={x=64, y=32}
 function _init()
  init_locns()
  add_hoarders()
- 
 end
 
  function fire_1() sfx(0) end
@@ -37,6 +36,13 @@ function _draw()
  line(x,y+2,x,y+3,7)
  
 end
+
+function init_locns()
+ for i=0,128 do
+ locns[i]={}
+ end
+end
+
 -->8
 --hoarders
 hoarders={}
@@ -65,67 +71,95 @@ function hoarder(sx,sy)
 	 end,
 	 
   move_diag=function(self)
+   local new_x=self.x
+   local new_y=self.y
    if(loo_roll.x<self.x) then
 	   new_x=self.x-1
 	  elseif(loo_roll.x>self.x) then
 	   new_x=self.x+1
 	  end
+
 	  if(loo_roll.y<self.y) then
 	   new_y=self.y-1
 	  elseif(loo_roll.y>self.y) then
 	   new_y=self.y+1
 	  end
 	  if locns[new_x][new_y]==nil then
- 	  self.x=new_x
-	   self.y=new_y
+ 	  self.x=flr(new_x)
+	   self.y=flr(new_y)
+	   self.moved=true
+	  end
+  end,
+  go_round=function(self)
+   local new_x=self.x
+   local new_y=self.y
+
+   if(loo_roll.x<self.x) then
+	   new_x=self.x+1
+	  elseif(loo_roll.x>self.x) then
+	   new_x=self.x-1
+	  else
+	   new_x=self.x+(rnd(2)-1)	  
+	  end
+
+	  if(loo_roll.y<self.y) then
+	   new_y=self.y-1
+	  elseif(loo_roll.y>self.y) then
+	   new_y=self.y+1
+	  end
+	  
+	  if locns[flr(new_x)][new_y]==nil then
+ 	  self.x=flr(new_x)
+	   self.y=flr(new_y)
 	   self.moved=true
 	  end
   end,
   
   move_up=function(self)
-  local new_y
+   local new_x=self.x
+   local new_y=self.y
 	  if(loo_roll.y<self.y) then
 	   new_y=self.y-1
 	  elseif(loo_roll.y>self.y) then
 	   new_y=self.y+1
 	  end
 	  if locns[self.x][new_y]==nil then
-	   self.y=new_y
+	   self.y=flr(new_y)
 	   self.moved=true
 	  end
   end,
   
   move=function(self)
-  self.moved=false
+   self.moved=false
    new_x=self.x
    new_y=self.y
-   locns[new_x][new_y]=nil
+   locns[flr(new_x)][new_y]=nil
    
    self:move_diag()
    if not self.moved then 
     self:move_up()
    end
-	  locns[self.x][self.y]=true
+   if not self.moved then 
+    self:go_round()
+   end
+   if(locns!=nil)then
+ 	  locns[flr(self.x)][self.y]=true
+	  end
 	 end
  }
 end
-function init_locns()
- for i=1,256 do
- locns[i]={}
- end
-end
 
 function add_hoarders()
- for x=40,90 do
-  for y=70,90 do
-   add(hoarders,hoarder(x,y))
-  end
+ for x=1,90 do
+  add(hoarders,hoarder(flr(rnd(60)+30),flr(rnd(30)+90)))
  end
 end
 
 function draw_hoarders()
  for hoarder in all(hoarders) do
- circfill(hoarder.x,hoarder.y,1,hoarder.colour)
+ circfill(hoarder.x,hoarder.y-1,0,15)
+ circfill(hoarder.x,hoarder.y,0,hoarder.colour)
+ circfill(hoarder.x,hoarder.y+1,0,1)
  end
 end
 __gfx__
