@@ -1,7 +1,12 @@
 pico-8 cartridge // http://www.pico-8.com
 version 18
 __lua__
-x = 64  y = 64
+x = 64 y = 64 window_x=0 window_y=0
+
+function _init()
+ rect(0,0,256,256,5)
+end
+
 function _update()
   if (btn(0)) then x=x-1 end
   if (btn(1)) then x=x+1 end
@@ -10,8 +15,13 @@ function _update()
 end
 
 function _draw()
-  rectfill(0,0,127,127,5)
-  circfill(x,y,7,8)
+cls()
+ map(0, 0, 0, 0, 1024, 64)
+	camera(window_x,window_y)
+ line(x-3,y,x-2,y,7)
+ line(x+3,y,x+2,y,7)
+ line(x,y-3,x,y-2,7)
+ line(x,y+2,x,y+3,7)
 end
 __gfx__
 00000000000000000000000047484840040454940000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
