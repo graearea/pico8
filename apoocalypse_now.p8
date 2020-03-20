@@ -9,10 +9,6 @@ function _init()
  add_hoarders()
 end
 
- function fire_1() sfx(0) end
- function fire_2() sfx(1) end
-
-
 function _update()
  if (btn(⬅️)) then x=x-1 end
  if (btn(➡️)) then x=x+1 end
@@ -29,13 +25,20 @@ function _draw()
  map(0, 0, 0, 0, 1024, 64)
 	
 	draw_hoarders()
+	draw_explosions()
 	camera(window_x,window_y)
  line(x-3,y,x-2,y,7)
  line(x+3,y,x+2,y,7)
  line(x,y-3,x,y-2,7)
  line(x,y+2,x,y+3,7)
- 
 end
+
+function fire_1() 
+ add(explosions,explosion(x,y))
+ sfx(0) 
+end
+function fire_2() sfx(1) end
+
 
 function init_locns()
  for i=0,128 do
@@ -47,6 +50,8 @@ end
 --hoarders
 hoarders={}
 locns={}
+hoard_speed=3
+counter=0
 
 function move_hoarders()
  rando=rnd(#hoarders)
@@ -62,8 +67,11 @@ function hoarder(sx,sy)
   moved=false,
   x=sx,
   y=sy,
+  dead=false,
   colour=(sy%10)+1,
-  
+  kill=function(self)
+   self.dead=true
+  end,
   checkcollision=function(self,loo_roll)
 	  if(loo_roll.y==self.y and loo_roll.x==self.x) then
 	   finished_game=true	   
@@ -130,6 +138,9 @@ function hoarder(sx,sy)
   end,
   
   move=function(self)
+
+   if self.dead then return end
+
    self.moved=false
    new_x=self.x
    new_y=self.y
@@ -161,6 +172,43 @@ function draw_hoarders()
  circfill(hoarder.x,hoarder.y,0,hoarder.colour)
  circfill(hoarder.x,hoarder.y+1,0,1)
  end
+end
+-->8
+--explosions
+
+explosions={}
+
+function draw_explosions()
+ for xplo in all(explosions) do
+  xplo:draw()
+ end
+end
+
+function explosion(sx,sy)
+ return {
+ x=sx,
+ y=sy,
+ age=0,
+ kill=function(self)
+  for hoarder in all(hoarders) do
+  if (hoarder.x>self.x-3 and hoarder.x<self.x+3) then
+  if (hoarder.y>self.y-3 and hoarder.y<self.y+3) then
+  hoarder:kill()
+  end end
+  end
+ end,
+ draw=function(self)
+  if(self.age==0) then
+  self:kill()
+  end
+  local size=5-self.age
+  local colour=9
+  circfill(self.x,self.y,size+1,0)
+  circfill(self.x,self.y,size,colour)
+  self.age=self.age+1
+  if self.age>4 then explosions[self]=nil end
+ end
+ }
 end
 __gfx__
 44444444000000000000000047484840040454940000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
