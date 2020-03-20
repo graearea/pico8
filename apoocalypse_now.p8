@@ -5,7 +5,9 @@ x = 64 y = 64 window_x=0 window_y=0
 
 loo_roll={x=64, y=32}
 function _init()
+ init_locns()
  add_hoarders()
+ 
 end
 
  function fire_1() sfx(0) end
@@ -38,21 +40,92 @@ end
 -->8
 --hoarders
 hoarders={}
+locns={}
 
 function move_hoarders()
+ rando=rnd(#hoarders)
+ rando=rnd(#hoarders)
  for hoarder in all(hoarders) do
-  hoarder.y=hoarder.y-1
+  hoarder:move()
+ end
+end
+
+function hoarder(sx,sy)
+ locns[sx][sy]=true
+ return {
+  moved=false,
+  x=sx,
+  y=sy,
+  colour=(sy%10)+1,
+  
+  checkcollision=function(self,loo_roll)
+	  if(loo_roll.y==self.y and loo_roll.x==self.x) then
+	   finished_game=true	   
+	  end
+	 end,
+	 
+  move_diag=function(self)
+   if(loo_roll.x<self.x) then
+	   new_x=self.x-1
+	  elseif(loo_roll.x>self.x) then
+	   new_x=self.x+1
+	  end
+	  if(loo_roll.y<self.y) then
+	   new_y=self.y-1
+	  elseif(loo_roll.y>self.y) then
+	   new_y=self.y+1
+	  end
+	  if locns[new_x][new_y]==nil then
+ 	  self.x=new_x
+	   self.y=new_y
+	   self.moved=true
+	  end
+  end,
+  
+  move_up=function(self)
+  local new_y
+	  if(loo_roll.y<self.y) then
+	   new_y=self.y-1
+	  elseif(loo_roll.y>self.y) then
+	   new_y=self.y+1
+	  end
+	  if locns[self.x][new_y]==nil then
+	   self.y=new_y
+	   self.moved=true
+	  end
+  end,
+  
+  move=function(self)
+  self.moved=false
+   new_x=self.x
+   new_y=self.y
+   locns[new_x][new_y]=nil
+   
+   self:move_diag()
+   if not self.moved then 
+    self:move_up()
+   end
+	  locns[self.x][self.y]=true
+	 end
+ }
+end
+function init_locns()
+ for i=1,256 do
+ locns[i]={}
  end
 end
 
 function add_hoarders()
- add(hoarders,{x=60,y=60})
- add(hoarders,{x=55,y=60})
+ for x=40,90 do
+  for y=70,90 do
+   add(hoarders,hoarder(x,y))
+  end
+ end
 end
 
 function draw_hoarders()
  for hoarder in all(hoarders) do
- circfill(hoarder.x,hoarder.y,1,9)
+ circfill(hoarder.x,hoarder.y,1,hoarder.colour)
  end
 end
 __gfx__
