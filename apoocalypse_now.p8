@@ -150,7 +150,7 @@ function hoarder(sx,sy)
 end
 
 function add_hoarders()
- for x=1,90 do
+ for x=1,900 do
   add(hoarders,hoarder(flr(rnd(60)+30),flr(rnd(30)+90)))
  end
 end
