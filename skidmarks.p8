@@ -7,6 +7,8 @@ bob=""
 started=false
 printed=false
 
+--try coroutines for game state
+
 function _init()
 lap_count=0
 laps={}
@@ -52,6 +54,7 @@ function _update60()
    if(car.steer<0) then car.steer+=0.5 end
   end
   if (btn(🅾️) and not printed) then 
+   _init()
    print_all_skids()
    printed=true
   end
@@ -425,13 +428,8 @@ function draw_taco(speed,x,y)
  line(x-5,y,x-5+taco.x,y+taco.y,8)
 end
 
-hit_speed=false
-
 function calc_taco(speed)
-if speed>60 then
- hit_speed=true
-end
-if (hit_speed) then
+if (speed>50) then
  new_speed=20+speed%10
 else
  new_speed=speed%30
