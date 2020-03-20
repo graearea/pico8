@@ -8,13 +8,17 @@ function _init()
  add_hoarders()
 end
 
+ function fire_1() sfx(0) end
+ function fire_2() sfx(1) end
+
+
 function _update()
  if (btn(⬅️)) then x=x-1 end
  if (btn(➡️)) then x=x+1 end
  if (btn(⬆️)) then y=y-1 end
  if (btn(⬇️)) then y=y+1 end
- if (btn(❎)) then sfx(0) end
- if (btn(🅾️)) then sfx(1) end
+ if (btn(❎)) then fire_1() end
+ if (btn(🅾️)) then fire_2() end
  move_hoarders()
 end
 
