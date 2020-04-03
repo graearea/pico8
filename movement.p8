@@ -2,10 +2,9 @@ pico-8 cartridge // http://www.pico-8.com
 version 18
 __lua__
 function _init()
- x=100 y=100
+ target={x=80, y=80,speed=3}
  rectfill(0,0,128,128,9)
- circfill(x,y,10,10)
- speed=3
+ chase={x=60,y=60,speed=1}
 end
 
 function _update()
@@ -15,25 +14,34 @@ function _update()
  if (btn(➡️)) then dx=1 end
  if (btn(⬆️)) then dy=1 end
  if (btn(⬇️)) then dy=-1 end   
- vector=move(dx,dy)
+ vector=move_target(dx,dy,target)
+ move_chase(chase,target)
 end
 
-function move(dx,dy)
+function move_chase(chase,target)
+ chase_angle=calc_dir(target.x-chase.x,chase.y-target.y)
+ chase_vector=calc_vector(chase_angle,chase.speed)
+ chase.x=chase.x+chase_vector.x
+ chase.y=chase.y+chase_vector.y
+end
+
+function move_target(dx,dy,obj)
  if dx==0 and dy==0 then return {dx=0,dy=0} end
  angle=  ((atan2(dx,dy)*360))%360
- new_dx=(speed*cos(-angle/360))
- new_dy=(speed*sin(-angle/360))
- x=x+new_dx
- y=y+new_dy
+ new_dx=(obj.speed*cos(-angle/360))
+ new_dy=(obj.speed*sin(-angle/360))
+ obj.x=obj.x+new_dx
+ obj.y=obj.y+new_dy
  return {dx=new_dx,dy=new_dy}
 end
 
 
 function _draw()
  rectfill(0,0,128,128,9)
- circfill(x,y,10,10)
- print(angle,x,y,black)
- print((vector.dx) .. "," .. (vector.dy) ,x,y-10,black)
+ circfill(target.x,target.y,10,10)
+ circfill(chase.x,chase.y,10,11)
+ print(angle,100,100,black)
+ print((vector.dx) .. "," .. (vector.dy) ,100,90,black)
  
 end
 
