@@ -25,12 +25,23 @@ function _draw()
  map(0, 0, 0, 0, 1024, 64)
 	
 	draw_hoarders()
-	draw_explosions()
+ draw_explosions()
+-- draw_locns()
 	camera(window_x,window_y)
  line(x-3,y,x-2,y,7)
  line(x+3,y,x+2,y,7)
  line(x,y-3,x,y-2,7)
  line(x,y+2,x,y+3,7)
+end
+
+function draw_locns()
+ for i=0,128 do
+  for j=0,128 do
+   if locns[i][j]==true then
+    pset(i,j,7)
+   end
+  end
+ end
 end
 
 function fire_1() 
@@ -77,87 +88,47 @@ function hoarder(sx,sy)
 	   finished_game=true	   
 	  end
 	 end,
-	 
-  move_diag=function(self)
-   local new_x=self.x
-   local new_y=self.y
-   if(loo_roll.x<self.x) then
-	   new_x=self.x-1
-	  elseif(loo_roll.x>self.x) then
-	   new_x=self.x+1
-	  end
 
-	  if(loo_roll.y<self.y) then
-	   new_y=self.y-1
-	  elseif(loo_roll.y>self.y) then
-	   new_y=self.y+1
-	  end
-	  if locns[new_x][new_y]==nil then
- 	  self.x=flr(new_x)
-	   self.y=flr(new_y)
-	   self.moved=true
-	  end
-  end,
-  go_round=function(self)
-   local new_x=self.x
-   local new_y=self.y
-
-   if(loo_roll.x<self.x) then
-	   new_x=self.x+1
-	  elseif(loo_roll.x>self.x) then
-	   new_x=self.x-1
-	  else
-	   new_x=self.x+(rnd(2)-1)	  
-	  end
-
-	  if(loo_roll.y<self.y) then
-	   new_y=self.y-1
-	  elseif(loo_roll.y>self.y) then
-	   new_y=self.y+1
-	  end
-	  
-	  if locns[flr(new_x)][new_y]==nil then
- 	  self.x=flr(new_x)
-	   self.y=flr(new_y)
-	   self.moved=true
-	  end
-  end,
-  
-  move_up=function(self)
-   local new_x=self.x
-   local new_y=self.y
-	  if(loo_roll.y<self.y) then
-	   new_y=self.y-1
-	  elseif(loo_roll.y>self.y) then
-	   new_y=self.y+1
-	  end
-	  if locns[self.x][new_y]==nil then
-	   self.y=flr(new_y)
-	   self.moved=true
-	  end
-  end,
-  
   move=function(self)
-
    if self.dead then return end
-
    self.moved=false
-   new_x=self.x
-   new_y=self.y
-   locns[flr(new_x)][new_y]=nil
-   
-   self:move_diag()
-   if not self.moved then 
-    self:move_up()
+
+   local x_diff=loo_roll.x-self.x
+   local y_diff=self.y-loo_roll.y
+   local angle =calc_dir(x_diff,y_diff)
+   self:move_it(angle)
+   self:move_it(angle-rnd(180)-90)
+
+  end,
+  move_it=function(self,angle)
+  if(self.moved==false) then
+   vector=calc_vector(angle,1)
+   new_loc={x=self.x+vector.x,y=self.y+vector.y}
+   if(locns[flr(new_loc.x)][flr(new_loc.y)] ~= true) then
+    locns[flr(self.x)][flr(self.y)]=nil
+    locns[flr(new_loc.x)][flr(new_loc.y)]=true
+    self.x=new_loc.x
+    self.y=new_loc.y
+    self.moved=true
    end
-   if not self.moved then 
-    self:go_round()
-   end
-   if(locns!=nil)then
- 	  locns[flr(self.x)][self.y]=true
-	  end
-	 end
+  end
+
+ end
+  
+
  }
+end
+
+
+function calc_dir(diff_x,diff_y)
+ if diff_x==0 and diff_y==0 then return nil end
+ return ((atan2(diff_x,diff_y)*360))%360
+end
+
+function calc_vector(angle,speed)
+ new_dx=(speed*cos(-angle/360))
+ new_dy=(speed*sin(-angle/360))
+ return {x=new_dx,y=new_dy}
 end
 
 function add_hoarders(number)
