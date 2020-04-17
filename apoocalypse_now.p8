@@ -4,9 +4,11 @@ __lua__
 x = 64 y = 64 window_x=0 window_y=0
 --main
 loo_roll={x=64, y=32}
+testmode=true
 function _init()
  init_locns()
  add_hoarders(300)
+ 
 end
 
 function _update()
@@ -21,18 +23,24 @@ end
 
 function _draw()
  cls()
- rectfill(0,0,128,128,5)
- map(0, 0, 0, 0, 1024, 64)
+ rectfill(0,0,128,512,5)
+ map(0, 0, 0, 0, 512, 64)
 	
 	draw_hoarders()
  draw_explosions()
-	camera(window_x,window_y)
+ draw_cam()
  line(x-3,y,x-2,y,7)
  line(x+3,y,x+2,y,7)
  line(x,y-3,x,y-2,7)
  line(x,y+2,x,y+3,7)
 end
 
+function draw_cam()
+ window_y=max(0,min(y-64,512))
+ 
+ 	camera(window_x,window_y)
+
+end
 function draw_locns()
  for i=0,128 do
   for j=0,128 do
@@ -95,17 +103,21 @@ function hoarder(sx,sy)
    local x_diff=loo_roll.x-self.x
    local y_diff=self.y-loo_roll.y
    local angle =calc_dir(x_diff,y_diff)
-   self:move_it(angle)
-   self:move_it(angle-rnd(180)-90)
+   if (self.y>96) then
+    angle=270
+   end
+   --self:move_it(angle)
+   self:move_it(angle+rnd(90)-45)
 
   end,
   move_it=function(self,angle)
   if(self.moved==false) then
    vector=calc_vector(angle,1)
    new_loc={x=self.x+vector.x,y=self.y+vector.y}
-   if(locns[flr(new_loc.x)][flr(new_loc.y)] ~= true) then
-    locns[flr(self.x)][flr(self.y)]=nil
-    locns[flr(new_loc.x)][flr(new_loc.y)]=true
+   if pget(new_loc.x,new_loc.y==5) then
+--   if(locns[flr(new_loc.x)][flr(new_loc.y)] ~= true) then
+    --locns[flr(self.x)][flr(self.y)]=nil
+    --locns[flr(new_loc.x)][flr(new_loc.y)]=true
     self.x=new_loc.x
     self.y=new_loc.y
     self.moved=true
@@ -131,8 +143,13 @@ function calc_vector(angle,speed)
 end
 
 function add_hoarders(number)
+if testmode then
  for x=1,number do
   add(hoarders,hoarder(flr(rnd(60)+30),flr(rnd(30)+90)))
+ end
+else
+ for x=1,number do
+  add(hoarders,hoarder(flr(rnd(80)+40),flr(rnd(512)+128)))
  end
 end
 
