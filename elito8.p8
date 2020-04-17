@@ -818,3 +818,26 @@ __lua__
   cam = c_camera()
   cls()
  end
+-->8
+function move_full(dx,dy,dz)
+    angle=calc_dir(dx,dy,dz)
+    if angle==nil then return end
+    local vector=calc_vector(angle,3)
+    x=x+vector.x
+    y=y+vector.y
+    y=y+vector.z
+   end
+   
+function calc_dir(diff_x,diff_y,diff_z)
+ if diff_x==0 and diff_y==0 and diff_z==0 then return nil end
+ dxy= ((atan2(diff_x,diff_y)*360))%360
+ dxz= ((atan2(diff_x,diff_z)*360))%360
+return {xy=dxy,xz=dxz}
+end
+
+function calc_vector(angle,speed)
+ new_dx=(speed*cos(-angle/360))
+ new_dy=(speed*sin(-angle/360))
+ new_dz=(speed*sin(-angle/360))
+ return {x=new_dx,y=new_dy,z=new_dz}
+end
