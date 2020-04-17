@@ -111,6 +111,10 @@ __lua__
    ["colour"]=colour,
    ["proj_m"]=proj_m(0.125,1.0,100.0,height/width)
   }
+
+  function view:move(add)
+   view["proj_m"]=proj_m(0.125+add,1.0,100.0,height/width)  
+  end
   
   if mode == nil then
    view.mode = "solid"
@@ -198,7 +202,7 @@ __lua__
    ["pos"] = {0,0,0,1},
    ["x_rot"] = 0,
    ["y_rot"] = 0,
-   ["z_rot"] = 0,
+   ["z_rot"] = 0.2,
    ["recalc"] = true
   }
   
@@ -233,7 +237,11 @@ __lua__
    self.z_rot = z
    self.recalc = true
   end
-  
+
+  function cam:get_rot()
+   return self.x_rot .. ":" .. self.y_rot .. ":" .. self.z_rot 
+  end
+   
   function cam:set_pos(x,y,z)
    self.pos = {x,y,z,1}
    self.recalc=true
@@ -377,70 +385,6 @@ __lua__
   c_model(ship_mesh, {0,-2,10}, 1.0, 0.02, 0.02, 0.02),
  }
 
- function _update()
-  total_scan_lines = 0
-  --rotate the station
-  rot_ship:set_rot(rot_ship.x_rot+0.001, rot_ship.y_rot, rot_ship.z_rot)
-
-  if btn(0) then
-   rot_ship:set_rot(rot_ship.x_rot+0.01, rot_ship.y_rot, rot_ship.z_rot)
-  end
-  
-   if btn(1) then
-   rot_ship:set_rot(rot_ship.x_rot-0.01, rot_ship.y_rot, rot_ship.z_rot)
-  end
-  
-   if btn(2) then
-   rot_ship:set_rot(rot_ship.x_rot, rot_ship.y_rot+0.01, rot_ship.z_rot)
-  end
-  
-   if btn(3) then
-   rot_ship:set_rot(rot_ship.x_rot, rot_ship.y_rot-0.01, rot_ship.z_rot)
-  end
-  
-  if btn(4) then
-   rot_ship:set_rot(rot_ship.x_rot, rot_ship.y_rot, rot_ship.z_rot+0.01)
-  end
-  
-   if btn(5) then
-   rot_ship:set_rot(rot_ship.x_rot, rot_ship.y_rot, rot_ship.z_rot-0.01)
-  end
-  
-  if btn(0,1) then
-   cam:set_rot(cam.x_rot+0.005, cam.y_rot, cam.z_rot)
-  end
-   if btn(1,1) then
-   cam:set_rot(cam.x_rot-0.005 , cam.y_rot, cam.z_rot)
-  end
-  if btn(2,1) then
-   cam:set_rot(cam.x_rot, cam.y_rot+0.005, cam.z_rot)
-  end
-  if btn(3,1) then
-   cam:set_rot(cam.x_rot, cam.y_rot-0.005, cam.z_rot)
-  end
-  cam.x_rot = min(max(cam.x_rot,-0.5),0.5)
-  if btnp(4,1) then
-  cam:set_pos(60,20,0)
-  end
- end
- function _draw()   
-  cls()
-  view1:render(models) 
---   view2:render(other_models)
-  print(stat(1),0,0,7)
-  print(total_scan_lines,0,8,7)
- end
-
- function _init()
-  
-  --create 2 seperate view ports just to show i can
-  --they do both share the same camera with is a bit poo 
-  view1 = c_viewport(128,88,0,0,0,vm_solid)
---   view2 = c_viewport(40,40,88,88,1,vm_wire)
-  
-  cam = c_camera()
-  cls()
- end
 -->8
 --maths
 
@@ -756,3 +700,69 @@ __lua__
 -->8
 --model
 
+ function _update()
+  total_scan_lines = 0
+  --rotate the station
+  rot_ship:set_rot(rot_ship.x_rot+0.001, rot_ship.y_rot, rot_ship.z_rot)
+
+  if btn(0) then
+   rot_ship:set_rot(rot_ship.x_rot+0.01, rot_ship.y_rot, rot_ship.z_rot)
+  end
+  
+   if btn(1) then
+   rot_ship:set_rot(rot_ship.x_rot-0.01, rot_ship.y_rot, rot_ship.z_rot)
+  end
+  
+   if btn(2) then
+   rot_ship:set_rot(rot_ship.x_rot, rot_ship.y_rot+0.01, rot_ship.z_rot)
+  end
+  
+   if btn(3) then
+   rot_ship:set_rot(rot_ship.x_rot, rot_ship.y_rot-0.01, rot_ship.z_rot)
+  end
+  
+  if btn(4) then
+   rot_ship:set_rot(rot_ship.x_rot, rot_ship.y_rot, rot_ship.z_rot+0.01)
+  end
+  
+   if btn(5) then
+   rot_ship:set_rot(rot_ship.x_rot, rot_ship.y_rot, rot_ship.z_rot-0.01)
+  end
+  
+  if btn(0,1) then
+   cam:set_rot(cam.x_rot, cam.y_rot, cam.z_rot-0.01)
+  end
+   if btn(1,1) then
+   cam:set_rot(cam.x_rot , cam.y_rot, cam.z_rot+0.01)
+  end
+  if btn(2,1) then
+   cam:set_rot(cam.x_rot, cam.y_rot+0.005, cam.z_rot)
+  end
+  if btn(3,1) then
+   cam:set_rot(cam.x_rot, cam.y_rot-0.005, cam.z_rot)
+  end
+  cam.x_rot = min(max(cam.x_rot,-0.5),0.5)
+  if btnp(4,1) then
+  cam:set_pos(60,20,0)
+  end
+ end
+ function _draw()   
+  cls()
+  view1:render(models) 
+  view1:move(1)
+
+--   view2:render(other_models)
+  print(cam:get_rot(),0,0,7)
+  print(total_scan_lines,0,8,7)
+ end
+
+ function _init()
+  
+  --create 2 seperate view ports just to show i can
+  --they do both share the same camera with is a bit poo 
+  view1 = c_viewport(128,88,0,0,0,vm_solid)
+--   view2 = c_viewport(40,40,88,88,1,vm_wire)
+  
+  cam = c_camera()
+  cls()
+ end
