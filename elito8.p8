@@ -22,6 +22,12 @@ __lua__
   thresholds = {-0.9,-0.5,0.0,0.2,0.4,0.6,0.7,1.0},
   colours = {{0x05,0x50},{0x55,0x55},{0xd5,0x5d}, {0xdd,0xdd}, {0x6d,0xd6}, {0x66,0x66}, {0x76,0x67}, {0x77,0x77}}
  }
+ 
+ black = {
+  thresholds = {-0.9,1.0},
+  colours = {{0x00,0x00},{0x00,0x00}}
+ }
+
 
  function dot(a,b)
   return a[1]*b[1] + a[2]*b[2] + a[3]*b[3]
@@ -82,10 +88,15 @@ __lua__
   {-1,1,-1,1},
   {1,-1,-1,1},
   {1,1,-1,1},
-  {0,0,-1.8,1}, --middle
-  {0,0,1.8,1},
-  {0,-1.8,0,1},
-  {0,1.8,0,1}
+  {0,0,-1.6,1}, --middle
+  {0,0,1.6,1},
+  {0,-1.6,0,1},
+  {0,1.6,0,1},
+  {1,-0.4,-0.1,1.01},
+  {1,-0.4,0.1,1.01},
+  {1,0.4,-0.1,1.01},
+  {1,0.4,0.1,1.01},
+  
  }
  bob={
  {3,4,2,1},
@@ -118,9 +129,30 @@ __lua__
  {11,5,7},--
  {11,1,5},--
 
+ {13,15,16,14},--
  } end
 
-
+ face_colours = {
+  shading_white,
+  shading_white,
+  shading_white,
+  shading_white,
+  shading_white,
+  shading_white,
+  shading_white,
+  shading_white,
+  shading_white,
+  shading_white,
+  shading_white,
+  shading_white,
+  shading_white,
+  shading_white,
+  shading_white,
+  shading_white,
+  shading_white,
+  shading_white,
+  black,
+ }
 
  --define and arbitary sized and
  --positioned viewport to draw
