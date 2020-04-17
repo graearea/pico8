@@ -768,16 +768,16 @@ __lua__
   rot_ship:set_rot(rot_ship.x_rot+0.01, rot_ship.y_rot, rot_ship.z_rot)
 
   if btn(0,1) then
-   cam:set_pos(cam.pos[1], cam.pos[2],cam.pos[3]-0.2)
+   cam:set_pos(cam.pos[1]+0.1, cam.pos[2],cam.pos[3])
   end
    if btn(1,1) then
-   cam:set_pos(cam.pos[1], cam.pos[2],cam.pos[3]+0.2)
+   cam:set_pos(cam.pos[1]-0.1, cam.pos[2],cam.pos[3])
   end
   if btn(2,1) then
-   cam:set_pos(cam.pos[1]-0.2, cam.pos[2],cam.pos[3])
+   cam:set_pos(cam.pos[1], cam.pos[2],cam.pos[3]+0.2)
   end
   if btn(3,1) then
-   cam:set_pos(cam.pos[1]+0.2, cam.pos[2],cam.pos[3])
+   cam:set_pos(cam.pos[1], cam.pos[2],cam.pos[3]-0.2)
   end
 
   
@@ -788,10 +788,10 @@ __lua__
    cam:set_rot(cam.x_rot , cam.y_rot, cam.z_rot+0.01)
   end
   if btn(2) then
-   cam:set_rot(cam.x_rot, cam.y_rot+0.005, cam.z_rot)
+   cam:set_rot(cam.x_rot-0.008, cam.y_rot, cam.z_rot)
   end
   if btn(3) then
-   cam:set_rot(cam.x_rot, cam.y_rot-0.005, cam.z_rot)
+   cam:set_rot(cam.x_rot+0.008, cam.y_rot, cam.z_rot)
   end
   cam.x_rot = min(max(cam.x_rot,-0.5),0.5)
   if btnp(4) then
@@ -812,8 +812,8 @@ __lua__
   
   --create 2 seperate view ports just to show i can
   --they do both share the same camera with is a bit poo 
-  view1 = c_viewport(128,128,0,0,0,vm_solid)
---   view2 = c_viewport(40,40,88,88,1,vm_wire)
+  view1 = c_viewport(128,128,0,0,1,vm_wire)
+--  view2 = c_viewport(40,40,88,88,1,vm_wire)
   
   cam = c_camera()
   cls()
