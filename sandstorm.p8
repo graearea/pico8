@@ -6,11 +6,21 @@ function _init()
  rectfill(0,0,128,128,9)
  curr_elem=1
  bgc=6
+ build_world()
+end
+
+bob=""
+world={}
+function build_world()
+ for i=1,128 do
+  world[i]={}
+ end
 end
 
 function _draw()
  rectfill(0,0,128,128,6)
  print(elements[curr_elem].name,100,80,black)
+ print(bob,100,90,black)
  local x=target.x
  local y=target.y
  line(x-3,y,x-2,y,7)
@@ -37,12 +47,12 @@ end
 particles={}
 
 states={
-  solid={
+  hard={
    move=function(x,y) 
     return {{y=y+1,x=x}}
    end
   },
-  liquid={
+  soft={
    move=function(x,y) 
     return {
      {y=y+1,x=x},
@@ -50,18 +60,44 @@ states={
      {y=y+1,x=x-1}
     }    
    end
+  },
+  liquid={
+   move=function(x,y) 
+    return {
+     {y=y+1,x=x},
+     {y=y+1,x=x+1},
+     {y=y+1,x=x-1},
+--     {y=y,x=x+1},
+--     {y=y,x=x-1},
+    }    
+   end,
+   pushed=function(x,y) 
+    return {
+     {y=y+1,x=x},
+     {y=y+1,x=x+1},
+     {y=y+1,x=x-1},
+     {y=y,x=x+1},
+     {y=y,x=x-1},
+     {y=y-1,x=x+1},
+     {y=y-1,x=x-1},
+     {y=y-1,x=x},
+    }    
+   end
+
   }
+
 }
 elements={
- {name="sand",colour=15,state=states.solid},
- {name="water",colour=12,state=states.liquid},
+ {name="stone",colour=5,state=states.hard,weight=10},
+ {name="sand",colour=15,state=states.soft,weight=10},
+ {name="water",colour=12,state=states.liquid,weight=5},
 }
 
 
 function sprinkle()
  local rndx=rnd(4)-2
  local rndy=rnd(4)-2
- add(particles, new_particle(target.x+rndx,target.y+rndy))
+ add(particles, new_particle(flr(target.x+rndx),flr(target.y+rndy)))
 end
 
 btndown=false
@@ -101,6 +137,7 @@ function particle(x,y,element)
   y=y, 
   element=element,
   fall=function(self)
+   world[self.x][self.y]=nil
    moves=element.state.move(self.x,self.y)
    for move in all(moves) do
     if is_clear(move.x,move.y) then
@@ -108,14 +145,28 @@ function particle(x,y,element)
       self.y=move.y
       break
     end
+    if can_push(move.x,move.y,self.element.weight) then
+     self.x=move.x
+     self.y=move.y
+     break
+   end
+   world[self.x][self.y]=self
    end
   end
  }
-
 end
 
-function is_clear(x,y)
- return pget(x,y)==bgc or pget(x,y+1)==7
+
+function can_push(x,y,weight)
+ local colour=pget(x,y)
+
+	 return false
+end
+
+function is_clear(x,y,weight)
+ bob= x .. y  
+ --return world[x]==nil
+ return pget(x,y)==bgc or pget(x,y)==6
 end
 
 function move_target(dx,dy,obj)
