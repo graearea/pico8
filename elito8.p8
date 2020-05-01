@@ -260,7 +260,7 @@ __lua__
    ["pos"] = {0,0,0,1},
    ["x_rot"] = 0,
    ["y_rot"] = 0,
-   ["z_rot"] = 0.2,
+   ["z_rot"] = 0.0,
    ["recalc"] = true
   }
   
@@ -429,7 +429,7 @@ __lua__
 
  models = {
     rot_ship,
-     c_model(ship_mesh, {3,0,20}, 0.8, 0, 0.125, 0),    
+--     c_model(ship_mesh, {3,0,20}, 0.8, 0, 0.125, 0),    
    --  c_model(ship_mesh, {-3,0,20}, 0.8, 0, 0.125, 0),
    --  c_model(ship_mesh, {6,0,20}, 0.8, 0, 0.125, 0),
    --  c_model(ship_mesh, {-6,0,20}, 0.8, 0, 0.125, 0),
@@ -762,26 +762,39 @@ __lua__
 -->8
 --model
 
+angle_dxy=0
+angle_dxz=0
+function move_by(x,y,z)
+   cam:set_pos(cam.pos[1]+x, cam.pos[2]+y,cam.pos[3]+z)
+end
+
  function _update()
   total_scan_lines = 0
   --rotate the station
   rot_ship:set_rot(rot_ship.x_rot+0.01, rot_ship.y_rot, rot_ship.z_rot)
 
   if btn(0,1) then
-   cam:set_pos(cam.pos[1]+0.1, cam.pos[2],cam.pos[3])
+   move_by(-0.1,0,0)
   end
    if btn(1,1) then
-   cam:set_pos(cam.pos[1]-0.1, cam.pos[2],cam.pos[3])
+   move_by(0.1,0,0)
   end
   if btn(2,1) then
-   cam:set_pos(cam.pos[1], cam.pos[2],cam.pos[3]+0.2)
+   move_by(0,0,0.2)
   end
   if btn(3,1) then
-   cam:set_pos(cam.pos[1], cam.pos[2],cam.pos[3]-0.2)
+   move_by(0,0,-0.2)
+  end
+  if btn(4,1) then
+   move_by(0,0.2,0)
+  end
+  if btn(5,1) then
+   move_by(0,-0.2,0)
   end
 
   
   if btn(0) then
+   
    cam:set_rot(cam.x_rot, cam.y_rot, cam.z_rot-0.01)
   end
    if btn(1) then
@@ -798,6 +811,7 @@ __lua__
   cam:set_pos(0,0,0)
   end
  end
+ 
  function _draw()   
   cls()
   view1:render(models) 
@@ -812,7 +826,7 @@ __lua__
   
   --create 2 seperate view ports just to show i can
   --they do both share the same camera with is a bit poo 
-  view1 = c_viewport(128,128,0,0,1,vm_wire)
+  view1 = c_viewport(128,128,0,0,0,vm_solid)
 --  view2 = c_viewport(40,40,88,88,1,vm_wire)
   
   cam = c_camera()
@@ -830,8 +844,8 @@ function move_full(dx,dy,dz)
    
 function calc_dir(diff_x,diff_y,diff_z)
  if diff_x==0 and diff_y==0 and diff_z==0 then return nil end
- dxy= ((atan2(diff_x,diff_y)*360))%360
- dxz= ((atan2(diff_x,diff_z)*360))%360
+ dxy= ((atan2(diff_x,diff_y)*360))
+ dxz= ((atan2(diff_x,diff_z)*360))
 return {xy=dxy,xz=dxz}
 end
 
