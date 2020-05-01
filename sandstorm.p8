@@ -73,14 +73,11 @@ states={
    end,
    pushed=function(x,y) 
     return {
-     {y=y+1,x=x},
-     {y=y+1,x=x+1},
-     {y=y+1,x=x-1},
      {y=y,x=x+1},
      {y=y,x=x-1},
+     {y=y-1,x=x},
      {y=y-1,x=x+1},
      {y=y-1,x=x-1},
-     {y=y-1,x=x},
     }    
    end
 
@@ -149,24 +146,35 @@ function particle(x,y,element)
      self.x=move.x
      self.y=move.y
      break
+    end
    end
    world[self.x][self.y]=self
+  end,
+  pushed=function(self)
+   world[self.x][self.y]=nil
+   moves=element.state.pushed(self.x,self.y)
+   for move in all(moves) do
+    if is_clear(move.x,move.y) then
+      self.x=move.x
+      self.y=move.y
+      break
+    end
    end
+   world[self.x][self.y]=self
   end
  }
 end
 
 
 function can_push(x,y,weight)
- local colour=pget(x,y)
-
-	 return false
+ pushee=world[x][y]
+ return (y<128 and pushee != nil and pushee.element.weight<weight)
 end
 
 function is_clear(x,y,weight)
  bob= x .. y  
- --return world[x]==nil
- return pget(x,y)==bgc or pget(x,y)==6
+ return world[x][y]==nil and y<128
+ --return pget(x,y)==bgc or pget(x,y)==6
 end
 
 function move_target(dx,dy,obj)
