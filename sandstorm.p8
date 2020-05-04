@@ -134,41 +134,46 @@ function particle(x,y,element)
   y=y, 
   element=element,
   fall=function(self)
-   world[self.x][self.y]=nil
-   moves=element.state.move(self.x,self.y)
+   local moves=element.state.move(self.x,self.y)
    for move in all(moves) do
     if is_clear(move.x,move.y) then
-      self.x=move.x
-      self.y=move.y
-      break
-    end
-    if can_push(move.x,move.y,self.element.weight) then
-     self.x=move.x
-     self.y=move.y
+     self:move_to(move.x,move.y)
      break
     end
-   end
-   world[self.x][self.y]=self
-  end,
-  pushed=function(self)
-   world[self.x][self.y]=nil
-   moves=element.state.pushed(self.x,self.y)
-   for move in all(moves) do
-    if is_clear(move.x,move.y) then
+    if can_squash(move.x,move.y,self.element.weight) then
+     if world[move.x][move.y]:push(1) then
+      self:move_to(move.x,move.y)
+      break
+     elseif world[move.x][move.y]:push(-1) then
       self.x=move.x
       self.y=move.y
-      break
+      break 
+     end          
     end
    end
+  end,
+  push=function(self,direction)
+   local lateral={y=self.y,x=self.x+direction}
+   if world[lateral.x][lateral.y]==nil or (can_squash(lateral.x,lateral.y,self.element.weight) and world[lateral.x][lateral.y]:push(direction)) then
+    self:move_to(lateral.x,lateral.y)
+    return true
+   end
+   return false
+  end,
+  move_to=function(self,dx,dy)
+   world[self.x][self.y]=nil
+   self.x=dx
+   self.y=dy
    world[self.x][self.y]=self
+
   end
  }
 end
 
 
-function can_push(x,y,weight)
+function can_squash(x,y,weight)
  pushee=world[x][y]
- return (y<128 and pushee != nil and pushee.element.weight<weight)
+ return (y<128 and pushee.element.weight<=weight and pushee.element.state==states.liquid)
 end
 
 function is_clear(x,y,weight)
