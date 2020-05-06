@@ -7,6 +7,7 @@ function _init()
  curr_elem=1
  bgc=6
  build_world()
+ add_test_particles()
 end
 
 bob=""
@@ -15,6 +16,23 @@ function build_world()
  for i=1,128 do
   world[i]={}
  end
+end
+
+function add_test_particles()
+ curr_elem=1
+ new_particle(60,127)
+ new_particle(60,126)
+ new_particle(70,127)
+ new_particle(70,126)
+ new_particle(80,127)
+ new_particle(80,126)
+ new_particle(80,125)
+ curr_elem=3
+ for y = 100,30,-1 do
+  new_particle(64,y)
+ end
+ 
+ -- world[60][127]=new_particle(60,127)
 end
 
 function _draw()
@@ -67,8 +85,6 @@ states={
      {y=y+1,x=x},
      {y=y+1,x=x+1},
      {y=y+1,x=x-1},
---     {y=y,x=x+1},
---     {y=y,x=x-1},
     }    
    end,
    pushed=function(x,y) 
@@ -94,7 +110,7 @@ elements={
 function sprinkle()
  local rndx=rnd(4)-2
  local rndy=rnd(4)-2
- add(particles, new_particle(flr(target.x+rndx),flr(target.y+rndy)))
+ new_particle(flr(target.x+rndx),flr(target.y+rndy))
 end
 
 btndown=false
@@ -125,7 +141,10 @@ function draw_particles()
 end
 	
 function new_particle(x,y)
- return particle(x,y,elements[curr_elem])
+ local par = particle(x,y,elements[curr_elem])
+ world[x][y]=par
+ add(particles, par)
+ return par
 end
 
 function particle(x,y,element)
@@ -153,9 +172,9 @@ function particle(x,y,element)
    end
   end,
   push=function(self,direction)
-   local lateral={y=self.y,x=self.x+direction}
-   if world[lateral.x][lateral.y]==nil or (can_squash(lateral.x,lateral.y,self.element.weight) and world[lateral.x][lateral.y]:push(direction)) then
-    self:move_to(lateral.x,lateral.y)
+   local locn={y=self.y,x=self.x+direction}
+   if can_push(locn,self.element.weight,direction) then
+    self:move_to(locn.x,locn.y)
     return true
    end
    return false
@@ -170,6 +189,9 @@ function particle(x,y,element)
  }
 end
 
+function can_push(lateral, curr_weight,direction)
+ return world[lateral.x][lateral.y]==nil or (can_squash(lateral.x,lateral.y,curr_weight) and world[lateral.x][lateral.y]:push(direction))
+end
 
 function can_squash(x,y,weight)
  pushee=world[x][y]
