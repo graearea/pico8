@@ -132,7 +132,7 @@ function apply_gravity()
  for strata=1,128 do
   --printh(strata .. " strata: " .. #world[strata])
   for j,p in pairs(world[strata]) do
-   printh("weight=" ..p:calc_weight())
+   --printh("weight=" ..p:calc_weight())
   end
  end
  for p in all(particles) do
@@ -181,9 +181,8 @@ function particle(x,y,element)
   push=function(self,direction)
 --   printh(frame .. " pushing " ..self.x .."," .. self.y)
    pushed_count+=1
-   local locn={y=self.y,x=self.x+direction}
-   if is_pushed(locn,self.element.weight,direction) then
-    self:move_to(locn.x,locn.y)
+   if is_pushed(self.x+direction,self.y,self.element.weight,direction) then
+    self:move_to(self.x+direction,self.y)
     return true
    end
    return false
@@ -206,8 +205,8 @@ function particle(x,y,element)
  }
 end
 
-function is_pushed(lateral, curr_weight,direction)
- return get_world(lateral.x,lateral.y)==nil or (can_squash(lateral.x,lateral.y,curr_weight) and get_world(lateral.x,lateral.y):push(direction))
+function is_pushed(x,y, curr_weight,direction)
+ return get_world(x,y)==nil or (can_squash(x,y,curr_weight) and get_world(x,y):push(direction))
 end
 
 function in_world(x,y)
