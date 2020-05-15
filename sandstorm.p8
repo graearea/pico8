@@ -11,7 +11,8 @@ function _init()
  frame=10001
  pushed_count=10001
 end
-
+LEFT=-1
+RIGHT=1
 bob=""
 world={}
 function build_world()
@@ -167,12 +168,11 @@ function particle(x,y,element)
      break
     end
     if can_squash(move.x,move.y,self.element.weight) then
-     if get_world(move.x,move.y):push(1) then
+     if get_world(move.x,move.y):push(RIGHT) then
       self:move_to(move.x,move.y)
       break
-     elseif get_world(move.x,move.y):push(-1) then
-      self.x=move.x
-      self.y=move.y
+     elseif get_world(move.x,move.y):push(LEFT) then
+      self:move_to(move.x,move.y)
       break 
      end          
     end
@@ -221,7 +221,6 @@ end
 function is_clear(x,y,weight)
  bob= x .. y  
  return in_world(x,y) and get_world(x,y)==nil
- --return pget(x,y)==bgc or pget(x,y)==6
 end
 
 function move_target(dx,dy,obj)
