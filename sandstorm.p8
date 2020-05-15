@@ -27,9 +27,15 @@ function add_test_particles()
  new_particle(80,127)
  new_particle(80,126)
  new_particle(80,125)
+ new_particle(55,127)
+ new_particle(55,126)
+ new_particle(55,125)
  curr_elem=3
- for y = 100,30,-1 do
-  new_particle(64,y)
+ for y = 100,50,-1 do
+  new_particle(62,y)
+ end
+ for y = 100,50,-1 do
+  new_particle(68,y)
  end
  
  -- world[60][127]=new_particle(60,127)
@@ -193,14 +199,18 @@ function can_push(lateral, curr_weight,direction)
  return world[lateral.x][lateral.y]==nil or (can_squash(lateral.x,lateral.y,curr_weight) and world[lateral.x][lateral.y]:push(direction))
 end
 
+function in_world(x,y)
+ return y<128 and y>0 and x>0 and x<128
+end
+
 function can_squash(x,y,weight)
- pushee=world[x][y]
- return (y<128 and pushee.element.weight<=weight and pushee.element.state==states.liquid)
+ 
+ return (in_world(x,y) and world[x][y].element.weight<=weight and world[x][y].element.state==states.liquid)
 end
 
 function is_clear(x,y,weight)
  bob= x .. y  
- return world[x][y]==nil and y<128
+ return in_world(x,y) and world[x][y]==nil
  --return pget(x,y)==bgc or pget(x,y)==6
 end
 
