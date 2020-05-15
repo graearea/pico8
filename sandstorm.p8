@@ -9,21 +9,21 @@ function _init()
  build_world()
  add_test_particles2()
  frame=10001
- pushed=10001
+ pushed_count=10001
 end
 
 bob=""
 world={}
 function build_world()
- for i=1,128 do
-  world[i]={}
+ for strata=1,128 do --y axis
+  world[strata]={} --x axis
  end
 end
 
 
 function _draw()
- printh("pushed " .. pushed)
- pushed=10001
+ printh("pushed " .. pushed_count)
+ pushed_count=10001
  rectfill(0,0,128,128,6)
  print(elements[curr_elem].name,100,80,black)
  print(bob,100,90,black)
@@ -115,9 +115,25 @@ function btn_up()
  btndown=false
 end
 
+
+function set_world(x,y,obj)
+ world[y][x]=obj
+end
+
+function get_world(x,y)
+ return world[y][x]
+end
+
 -->8
 --particles
 function apply_gravity()
+  
+ for strata=1,128 do
+  --printh(strata .. " strata: " .. #world[strata])
+  for j,p in pairs(world[strata]) do
+   printh("weight=" ..p:calc_weight())
+  end
+ end
  for p in all(particles) do
   p:fall()
  end
@@ -132,7 +148,7 @@ end
 	
 function new_particle(x,y)
  local par = particle(x,y,elements[curr_elem])
- world[x][y]=par
+ set_world(x,y,par)
  add(particles, par)
  return par
 end
@@ -142,6 +158,7 @@ function particle(x,y,element)
   x=x, 
   y=y, 
   element=element,
+  weight=element.weight,
   fall=function(self)
    local moves=element.state.move(self.x,self.y)
    for move in all(moves) do
@@ -150,10 +167,10 @@ function particle(x,y,element)
      break
     end
     if can_squash(move.x,move.y,self.element.weight) then
-     if world[move.x][move.y]:push(1) then
+     if get_world(move.x,move.y):push(1) then
       self:move_to(move.x,move.y)
       break
-     elseif world[move.x][move.y]:push(-1) then
+     elseif get_world(move.x,move.y):push(-1) then
       self.x=move.x
       self.y=move.y
       break 
@@ -163,9 +180,9 @@ function particle(x,y,element)
   end,
   push=function(self,direction)
 --   printh(frame .. " pushing " ..self.x .."," .. self.y)
-   pushed+=1
+   pushed_count+=1
    local locn={y=self.y,x=self.x+direction}
-   if pushed(locn,self.element.weight,direction) then
+   if is_pushed(locn,self.element.weight,direction) then
     self:move_to(locn.x,locn.y)
     return true
    end
@@ -173,17 +190,24 @@ function particle(x,y,element)
   end,
   move_to=function(self,dx,dy)
 --   printh(frame .. " moving " ..self.x .."," .. self.y)
-   world[self.x][self.y]=nil
+   set_world(self.x,self.y,nil)
    self.x=dx
    self.y=dy
-   world[self.x][self.y]=self
+   set_world(self.x,self.y,self)
 
+  end,
+  calc_weight=function(self)
+   local above_weight
+   local above =get_world(self.x,self.y-1)
+   if above == nil then above_weight=0 else above_weight = above.weight end
+   self.weight=above_weight+self.element.weight
+   return self.weight
   end
  }
 end
 
-function pushed(lateral, curr_weight,direction)
- return world[lateral.x][lateral.y]==nil or (can_squash(lateral.x,lateral.y,curr_weight) and world[lateral.x][lateral.y]:push(direction))
+function is_pushed(lateral, curr_weight,direction)
+ return get_world(lateral.x,lateral.y)==nil or (can_squash(lateral.x,lateral.y,curr_weight) and get_world(lateral.x,lateral.y):push(direction))
 end
 
 function in_world(x,y)
@@ -191,12 +215,12 @@ function in_world(x,y)
 end
 
 function can_squash(x,y,weight) 
- return (in_world(x,y) and world[x][y].element.weight<=weight and world[x][y].element.state==states.liquid)
+ return (in_world(x,y) and get_world(x,y).element.weight<=weight and get_world(x,y).element.state==states.liquid)
 end
 
 function is_clear(x,y,weight)
  bob= x .. y  
- return in_world(x,y) and world[x][y]==nil
+ return in_world(x,y) and get_world(x,y)==nil
  --return pget(x,y)==bgc or pget(x,y)==6
 end
 
