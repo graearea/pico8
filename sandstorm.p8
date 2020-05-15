@@ -7,9 +7,9 @@ function _init()
  curr_elem=1
  bgc=6
  build_world()
- add_test_particles2()
- frame=10001
- pushed_count=10001
+ add_test_particles1()
+ frame=10000
+ pushed_count=10000
 end
 LEFT=-1
 RIGHT=1
@@ -28,6 +28,8 @@ function _draw()
  rectfill(0,0,128,128,6)
  print(elements[curr_elem].name,100,80,black)
  print(bob,100,90,black)
+ print(#particles,0,0,black)
+ -- print(stat(1),0,10,black) --CTRL-P FTW!
  local x=target.x
  local y=target.y
  line(x-3,y,x-2,y,7)
@@ -163,15 +165,20 @@ function particle(x,y,element)
   fall=function(self)
    local moves=element.state.move(self.x,self.y)
    for move in all(moves) do
+
+    if not in_world(move.x,move.y) then break end
+    
     if is_clear(move.x,move.y) then
      self:move_to(move.x,move.y)
      break
     end
-    if can_squash(move.x,move.y,self.element.weight) then
-     if get_world(move.x,move.y):push(RIGHT) then
+    
+    local thing= get_world(move.x,move.y)
+    if  can_squash(thing,self.element.weight) then
+     if thing:push(RIGHT) then
       self:move_to(move.x,move.y)
       break
-     elseif get_world(move.x,move.y):push(LEFT) then
+     elseif thing:push(LEFT) then
       self:move_to(move.x,move.y)
       break 
      end          
@@ -179,7 +186,6 @@ function particle(x,y,element)
    end
   end,
   push=function(self,direction)
---   printh(frame .. " pushing " ..self.x .."," .. self.y)
    pushed_count+=1
    if is_pushed(self.x+direction,self.y,self.element.weight,direction) then
     self:move_to(self.x+direction,self.y)
@@ -188,7 +194,6 @@ function particle(x,y,element)
    return false
   end,
   move_to=function(self,dx,dy)
---   printh(frame .. " moving " ..self.x .."," .. self.y)
    set_world(self.x,self.y,nil)
    self.x=dx
    self.y=dy
@@ -206,15 +211,16 @@ function particle(x,y,element)
 end
 
 function is_pushed(x,y, curr_weight,direction)
- return get_world(x,y)==nil or (can_squash(x,y,curr_weight) and get_world(x,y):push(direction))
+ local thing= get_world(x,y)
+ return thing==nil or (can_squash(thing,curr_weight) and thing:push(direction))
 end
 
 function in_world(x,y)
  return y<128 and y>0 and x>0 and x<128
 end
 
-function can_squash(x,y,weight) 
- return (in_world(x,y) and get_world(x,y).element.weight<=weight and get_world(x,y).element.state==states.liquid)
+function can_squash(thing,weight)  
+ return (in_world(thing.x,thing.y) and thing.element.weight<=weight and thing.element.state==states.liquid)
 end
 
 function is_clear(x,y,weight)
