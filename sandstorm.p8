@@ -7,7 +7,9 @@ function _init()
  curr_elem=1
  bgc=6
  build_world()
- add_test_particles()
+ add_test_particles2()
+ frame=10001
+ pushed=10001
 end
 
 bob=""
@@ -18,30 +20,10 @@ function build_world()
  end
 end
 
-function add_test_particles()
- curr_elem=1
- new_particle(60,127)
- new_particle(60,126)
- new_particle(70,127)
- new_particle(70,126)
- new_particle(80,127)
- new_particle(80,126)
- new_particle(80,125)
- new_particle(55,127)
- new_particle(55,126)
- new_particle(55,125)
- curr_elem=3
- for y = 100,50,-1 do
-  new_particle(62,y)
- end
- for y = 100,50,-1 do
-  new_particle(68,y)
- end
- 
- -- world[60][127]=new_particle(60,127)
-end
 
 function _draw()
+ printh("pushed " .. pushed)
+ pushed=10001
  rectfill(0,0,128,128,6)
  print(elements[curr_elem].name,100,80,black)
  print(bob,100,90,black)
@@ -55,6 +37,7 @@ function _draw()
 end
 
 function _update()
+ frame+=1
  local dx=0
  local dy=0
  if (btn(⬅️)) then dx=-1 end
@@ -141,6 +124,7 @@ function apply_gravity()
 end
 
 function draw_particles()
+printh("drawing")
  for p in all(particles) do
   pset(p.x,p.y,p.element.colour)
  end
@@ -178,14 +162,17 @@ function particle(x,y,element)
    end
   end,
   push=function(self,direction)
+--   printh(frame .. " pushing " ..self.x .."," .. self.y)
+   pushed+=1
    local locn={y=self.y,x=self.x+direction}
-   if can_push(locn,self.element.weight,direction) then
+   if pushed(locn,self.element.weight,direction) then
     self:move_to(locn.x,locn.y)
     return true
    end
    return false
   end,
   move_to=function(self,dx,dy)
+--   printh(frame .. " moving " ..self.x .."," .. self.y)
    world[self.x][self.y]=nil
    self.x=dx
    self.y=dy
@@ -195,7 +182,7 @@ function particle(x,y,element)
  }
 end
 
-function can_push(lateral, curr_weight,direction)
+function pushed(lateral, curr_weight,direction)
  return world[lateral.x][lateral.y]==nil or (can_squash(lateral.x,lateral.y,curr_weight) and world[lateral.x][lateral.y]:push(direction))
 end
 
@@ -203,8 +190,7 @@ function in_world(x,y)
  return y<128 and y>0 and x>0 and x<128
 end
 
-function can_squash(x,y,weight)
- 
+function can_squash(x,y,weight) 
  return (in_world(x,y) and world[x][y].element.weight<=weight and world[x][y].element.state==states.liquid)
 end
 
@@ -220,6 +206,47 @@ function move_target(dx,dy,obj)
  obj.y=obj.y+dy
  return {dx=new_dx,dy=new_dy}
 end
+-->8
+--testicles
+function add_test_particles1()
+ curr_elem=1
+ new_particle(60,127)
+ new_particle(60,126)
+ new_particle(70,127)
+ new_particle(70,126)
+ new_particle(80,127)
+ new_particle(80,126)
+ new_particle(80,125)
+ new_particle(55,127)
+ new_particle(55,126)
+ new_particle(55,125)
+ curr_elem=3
+ for y = 100,50,-1 do
+  new_particle(62,y)
+ end
+-- for y = 100,50,-1 do
+--  new_particle(68,y)
+-- end
+ 
+ -- world[60][127]=new_particle(60,127)
+end
+ function add_test_particles2()
+ curr_elem=1
+ new_particle(60,127)
+ new_particle(60,126)
+ new_particle(64,127)
+ new_particle(64,126)
+ curr_elem=3
+ for y = 105,100,-1 do
+  new_particle(61,y)
+ end
+-- for y = 100,50,-1 do
+--  new_particle(68,y)
+-- end
+ 
+ -- world[60][127]=new_particle(60,127)
+end
+
 __gfx__
 00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
