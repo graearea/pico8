@@ -1,16 +1,20 @@
 pico-8 cartridge // http://www.pico-8.com
 version 27
 __lua__
+local new_state={}
 function build_world()
- for y=0,127 do
+ for x=0,127 do
    new_state[x]={}
-  for x=0,127 do
+  for y=0,127 do
    new_state[x][y]=nil
   end
  end
 end
 
 function _init()
+ build_world()
+ rectfill(0,0,128,128,0)
+ rectfill(64,64,7)
 end
 
 function _update60()
@@ -35,25 +39,33 @@ function _draw()
  rectfill(0,0,128,128,0)
  for y=0,127 do
   for x=0,127 do
-  if new_state[x][y] then
-   pset(x,y,7)
+   if new_state[x][y] then
+    pset(x,y,7)
+   end
   end
  end
 end
 
-function cell(x,y)
- return {
-  age=1,
-  live=function(self)
-   
-   printh("split" .. x .. y)
-  end,
-  
-  draw=function(self)
-   rectfill(x,y,x+2,y+2,7)
-  end
+function count_neighbours(x,y)
+local cnt=0 
+local neybs={
+ {x=x,y=y-1}, 
+ {x=x,y=y+1},
+
+ {x=x+1,y=y+1},
+ {x=x+1,y=y},
+ {x=x+1,y=y-1},
+
+ {x=x-1,y=y+1},
+ {x=x-1,y=y},
+ {x=x-1,y=y-1}
  }
- 
+ for neyb in all(neybs) do
+  local alive =pget(neyb.x,neyb.y)!=7
+  if (alive) then cnt+=1 end
+ end
+ if cnt>0 then printh(x ..","..y..":"..cnt)
+ return cnt
 end
 __gfx__
 00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
