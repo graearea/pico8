@@ -1,38 +1,75 @@
 pico-8 cartridge // http://www.pico-8.com
 version 27
 __lua__
-local new_state={}
+new_state={}
+old_state={}
+tings=0
 function build_world()
  for x=0,127 do
    new_state[x]={}
+   old_state[x]={}
   for y=0,127 do
    new_state[x][y]=nil
+   old_state[x][y]=nil
   end
  end
 end
 
 function _init()
- build_world()
- rectfill(0,0,128,128,0)
- rectfill(64,64,7)
+rectfill(0,0,128,128,0)
+build_world()
+rectfill(53,53,54,54,11)
+rectfill(03,03,24,24,8)
+
+pset(60,60,7)
+pset(62,60,8)
+pset(61,61,8)
+pset(62,61,7)
+pset(61,62,7)
+
 end
 
-function _update60()
+function _update()
+tings=0
  for y=0,127 do
   for x=0,127 do
+  tings+=1
    px=pget(x,y)
    local n_cnt=count_neighbours(x,y)
-   local alive
+   if (n_cnt>0) then 
+   end
+   local alive=nil
    if (n_cnt==2) then 
-    alive=true
+    alive=(px!=0)
    elseif (n_cnt==3) then 
-    alive=(px!=0) 
+    alive=true 
    else 
-    alive=false
+    alive=nil
    end
    new_state[x][y]=alive
   end
  end
+end
+
+neybs={
+  {x=0-1,y=0-1},
+  {x=0,y=0-1},
+  {x=0+1,y=0-1},
+  {x=0-1,y=0},
+  {x=0+1,y=0},
+  {x=0-1,y=0+1},
+  {x=0,y=0+1},
+  {x=0+1,y=0+1},
+ }
+
+function count_neighbours(x,y)
+ local cnt=0
+ for neyb in all(neybs) do
+  if (pget(neyb.x+x,neyb.y+y) !=0) then
+   cnt+=1
+  end
+ end
+ return cnt
 end
 
 function _draw()
@@ -40,33 +77,16 @@ function _draw()
  for y=0,127 do
   for x=0,127 do
    if new_state[x][y] then
-    pset(x,y,7)
+    pset(x,y,9)
+   else
+    pset(x,y,0)
    end
   end
  end
+  printh(stat(1)) --ctrl-p ftw!
+ printh(tings)
 end
 
-function count_neighbours(x,y)
-local cnt=0 
-local neybs={
- {x=x,y=y-1}, 
- {x=x,y=y+1},
-
- {x=x+1,y=y+1},
- {x=x+1,y=y},
- {x=x+1,y=y-1},
-
- {x=x-1,y=y+1},
- {x=x-1,y=y},
- {x=x-1,y=y-1}
- }
- for neyb in all(neybs) do
-  local alive =pget(neyb.x,neyb.y)!=7
-  if (alive) then cnt+=1 end
- end
- if cnt>0 then printh(x ..","..y..":"..cnt)
- return cnt
-end
 __gfx__
 00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
