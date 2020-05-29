@@ -98,6 +98,33 @@ elements={
  {name="water",colour=12,state=states.liquid,weight=5},
 }
 
+function surroundings(x,y,dir) 
+  return {
+   {y=y,x=x+dir},
+   {y=y,x=x-dir},
+   {y=y-1,x=x},
+   {y=y-1,x=x+dir},
+   {y=y-1,x=x-dir},
+   {y=y+1,x=x}, --are these needed?
+   {y=y+1,x=x+dir},
+   {y=y+1,x=x-dir},
+  }    
+end
+
+function lowest_pressure_neighbour(x,y,curr_weight,dir)
+ local best =curr_weight
+ local surr=surroundings(x,y,dir)
+ for _,neigh in pairs(surr) do
+  ralf = get_world(neigh.x,neigh.y)
+  local weight =ralf.weight
+  if(ralf == nil or weight<best) then
+   if ralf == nil then
+   else best = ralf
+   end
+  end
+ end
+ return best
+end
 
 function sprinkle()
  local rndx=rnd(4)-2
@@ -162,6 +189,7 @@ function particle(x,y,element)
   y=y, 
   element=element,
   weight=element.weight,
+  frame_completed=0,
   fall=function(self)
    local moves=element.state.move(self.x,self.y)
    for move in all(moves) do
@@ -186,11 +214,17 @@ function particle(x,y,element)
    end
   end,
   push=function(self,direction)
+   if (self.frame_completed==frame) then return end
    pushed_count+=1
+   --lowest_pressure_neighbour(self.x,self.y,self.weight,direction)
+   --local locn={y=self.y,x=self.x+direction}
    if is_pushed(self.x+direction,self.y,self.element.weight,direction) then
     self:move_to(self.x+direction,self.y)
+    self.frame_completed=frame
     return true
    end
+    
+   self.frame_completed=frame
    return false
   end,
   move_to=function(self,dx,dy)
