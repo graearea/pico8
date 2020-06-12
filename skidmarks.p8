@@ -28,6 +28,13 @@ finish=41
 tyres=add_tyres()
 --sfx(10,1)
 print_skids(skids_l)
+menuitem(1,"toggle 3d", function()
+ if drawmode=="3d" then
+  drawmode="2d"
+ else
+  drawmode="3d"
+ end
+end)
 end
 
 score=0	
@@ -35,7 +42,6 @@ function _update60()
  --do something 
  current_score=(abs(car.angle)*car.speed)/1000
  score+=current_score
- drawstart()
  if(btn(❎)) then
   started=true
   timer_start=time()
@@ -49,16 +55,30 @@ function _update60()
    if(car.steer>0) then car.steer-=0.5 end
    if(car.steer<0) then car.steer+=0.5 end
   end
-  if (btn(🅾️) and not printed) then 
-   _init()
-   print_all_skids()
-   printed=true
-  end
+  --if (btn(🅾️) and not printed) then 
+  -- _init()
+  -- print_all_skids()
+  -- printed=true
+  --end
+  if (btnp(🅾️)) then
+   if drawmode=="3d" then
+    drawmode="2d"
+   else
+    drawmode="3d"
+   end
+   end
+  
   if (btn(❎)) then 
    handbrake=true  
   else
    handbrake=false
   end
+  if (btn(⬆️)) then
+   accelerate=true
+  else
+   accelerate=false
+  end
+  
   timer+=1
   car.angle=car.angle+car.steer
   car:move()
@@ -69,13 +89,20 @@ function _update60()
   record_lap()
  end
 end
-
+drawmode="2d"
 function _draw()
+  rectfill(-200,-200,1024,1027,3)
+if drawmode=="3d" then
+  --draw_rotated(car.x,car.y,car.angle)
+  draw_rotated(car.x/8,car.y/8,1-car.angle/360)
+  print(car.x .. " " .. car.y .." ".. car.angle, 0,0,7)
+else 
+ drawstart()
+
  if (started) then
   window_x=car.x-58
   window_y=car.y-58
   camera(window_x,window_y)
-  
   rectfill(-200,-200,1024,1027,3)
   map(0, 0, 0, 0, 1024, 64)
 	 draw_skids(skids_l)
@@ -97,6 +124,51 @@ function _draw()
   print(flr(60-(time()-timer_start)), window_x+120,window_y,black)
  end
  print()
+end
+end
+
+function draw_rotated(mx,my,a)
+  cls(13)
+  camera()
+  rectfill(0,64,127,127,3)
+  rectfill(0,60,127,64,6)
+  -- loop map outside of 8x8
+  --poke(0x5f38, 8)
+   --poke(0x5f39, 8)
+ 
+  -- player direction
+  local sty=sin(a)
+  local stx=cos(a)
+  
+  -- camera direction
+  local msy=cos(a)
+  local msx=-sin(a)
+ 
+  -- not bothering with
+  -- 64..71 - too noisy
+  for y=64,128 do  
+   local tx=mx*sin(a)-my*cos(a)
+   local ty=mx*cos(a)+my*sin(a)
+   
+   local dist=(128/(2*y-128+1))
+ 
+   --printh(">"..msx.." "..msy)
+   
+   local dby4=dist/1
+   
+   local d16=dby4/64
+   
+   tline(
+    0,y,127,y,
+    
+    mx+(-msx+stx)*dby4,
+    my+(-msy+sty)*dby4,
+    
+    d16*msx,d16*msy
+    -- after every pixel *drawn*
+    -- not texel!!!!
+   ) 
+  end
 end
 
 function new_lap(now,cnt)
@@ -213,7 +285,7 @@ function car(ix,iy)
   
 		local delta_dx=(self.new_dx-dx)/50
 		local delta_dy=(self.new_dy-dy)/50
-  if (not handbrake) do
+  if (not handbrake and accelerate) do
  		dx=dx+delta_dx
  		dy=dy+delta_dy
   else
@@ -518,7 +590,7 @@ else
 end
  local xx=-cos(new_speed*6/360)*5
  local yy=sin(new_speed*6/360)*5 
- printh(speed .. " " ..xx .. " " ..yy)
+ --printh(speed .. " " ..xx .. " " ..yy)
  return {x=xx,y=yy}
  
 end
