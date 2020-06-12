@@ -31,9 +31,6 @@ finish=41
 tyres=add_tyres()
 ended=false
 camera_location={}
-for i=0 , 10 do
-  camera_location[i]={x=30,y=64}
-end 
 --sfx(10,1)
 print_skids(skids_l)
 menuitem(1,"toggle 3d", function()
@@ -108,10 +105,8 @@ end
 function _draw()
   rectfill(-200,-200,1024,1027,3)
   if drawmode=="3d" then
-    --draw_rotated(car.x,car.y,car.angle)
-    local camera=camera_location[(timer+1)%10]
-    draw_rotated(camera.x/8,camera.y/8,1-car.angle/360)
-    print(car.x .. " " .. car.y .." ".. car.angle, 0,0,7)
+    draw_rotated(car.x/8-2*cos(car.angle/360),car.y/8+2*sin(car.angle/360),1-car.angle/360)
+    print("car:" ..car.x..":"..car.y.." bob" .. car.x/8+2*cos(1-car.angle/360).." "..car.y/8-2*sin(1-car.angle/360).." "..1-car.angle/360, 0,0,7)
     print(stat(1),0,10,black) --CTRL-P FTW!
 
   elseif (ended) then
@@ -135,7 +130,7 @@ function _draw()
     for d in all(dust) do
     d:draw()
     end
-    --car:draw()
+    car:draw()
     if bob!="" then printh(bob) end
     draw_speedo(0)
     print(flr(score),window_x+100,window_y+120,7)
@@ -188,8 +183,8 @@ function draw_rotated(mx,my,a)
     -- not texel!!!!
    ) 
    draw_billboard_sprite(
-    {x=car.x/8,y=car.y/8,tex_x=0,tex_y=32,width=16,height=8,z=0},
-    mx,my,
+    {x=car.x/8,y=car.y/8,tex_x=0,tex_y=32,width=16,height=8,z=100},
+    mx,my, -- cam position
     stx,sty,
     msx,msy
   )
@@ -373,8 +368,6 @@ function car(ix,iy)
   self.dy=dy  
 		-- add skids
     self:add_skids()
-    camera_frame_count=timer%10
-    camera_location[camera_frame_count]={x=self.x,y=self.y}
 	end,	
 	
 	add_skids=function(self)
@@ -725,9 +718,9 @@ function draw_billboard_sprite(
   
   local sscr_x=flr(64*(1+t_x/t_y))
   local sc_y=flr(abs(128/t_y))
-  local s_height=sc_y
-  local s_width=sc_y
-  local s_width2=sc_y/2
+  local s_height=sc_y*0.3
+  local s_width=sc_y*0.6
+  local s_width2=s_width/2
   local ds_y=-sc_y/2+64+(s.z/t_y)
   
   local ds_x=-s_width2+sscr_x
