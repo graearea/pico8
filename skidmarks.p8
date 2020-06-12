@@ -7,6 +7,7 @@ bob=""
 started=false
 printed=false
 sound=false
+timer_start=0
 --try coroutines for game state
 
 function _init()
@@ -28,14 +29,7 @@ tyres=add_tyres()
 --sfx(10,1)
 print_skids(skids_l)
 end
-	
-function drawstart()
-rectfill(0,0,128,128,11)
-print("it's dorifto time!",25,30,1)
-print("press x to start ",27,40,1)
-print("hold x for handbrake",20,50,1)
 
-end
 score=0	
 function _update60()
  --do something 
@@ -44,6 +38,7 @@ function _update60()
  drawstart()
  if(btn(❎)) then
   started=true
+  timer_start=time()
  end
  if(started) then
   if (btn(⬅️)) then 
@@ -98,7 +93,10 @@ function _draw()
   if bob!="" then printh(bob) end
   draw_speedo()
   print(flr(score),window_x+100,window_y+120,7)
+  print(stat(1),window_x+0,window_y+10,black) --CTRL-P FTW!
+  print(flr(60-(time()-timer_start)), window_x+120,window_y,black)
  end
+ print()
 end
 
 function new_lap(now,cnt)
@@ -108,7 +106,6 @@ return {
  count=cnt
 }
 end
-
 
 function record_lap()
  sprite=mget(car.x/8,car.y/8)
@@ -142,7 +139,14 @@ function round(num,places)
 function clamp(v,mn,mx)
  return max(mn,min(v,mx))
 end
-
+	
+function drawstart()
+  rectfill(0,0,128,128,11)
+  print("it's dorifto time!",25,30,1)
+  print("press x to start ",27,40,1)
+  print("hold x for handbrake",20,50,1)
+  end
+  
 -->8
 -- car
 v_wall=60
@@ -185,7 +189,19 @@ function car(ix,iy)
    end   
    return false
  end,
- 
+
+ hit_tyre=function(self,dx,dy)
+  for tyre in all(tyres) do
+    if (abs(self.x-tyre.x)<3) then
+      if (abs(self.y-tyre.y)<3) then
+        return true
+      end
+    end
+   end
+  return false
+  --return self.x >200 and self.x <220 
+ end,
+
 	move=function(self,v)
 	 local dx=self.dx
   local dy=self.dy
@@ -212,7 +228,12 @@ function car(ix,iy)
   elseif self:would_hit_wall(dx,dy,v_wall) then
    dx=clamp(dx,0,10)
   end
- 
+  
+  if self:hit_tyre(dx,dy) then
+    dx=dx*0.2
+    dy=dy*0.2
+  end
+   
   self.x=self.x+dx
   self.y=self.y+dy 
   self.speed =flr(speed_of(dx,dy)*30)
@@ -369,7 +390,7 @@ end
 
 function draw_tyres()
   palt(0,false)
-  palt(11,true)
+  palt(3,true)
  for tyre in all(tyres) do
   spr(43,tyre.x*8,tyre.y*8)
  end
