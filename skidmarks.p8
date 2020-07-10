@@ -122,13 +122,13 @@ function _draw()
     draw_skids(skids_r)
     draw_skids(skids_fl)
     draw_skids(skids_fr)
-    draw_ghost()
     
     draw_tyres()
 
     for d in all(dust) do
     d:draw()
     end
+    draw_ghost()
     car:draw()
     if bob!="" then printh(bob) end
     draw_speedo(0)
@@ -376,6 +376,7 @@ function car(ix,iy)
  		if (skidding) then
  	  self:add_skid(skids_r,self.r_wheels[1],true,true)
  	  self:add_skid(skids_l,self.r_wheels[2],true,true)	  
+    self:create_smoke_on_wheels() 
 	   --add_new_dust
 	   was_skidding=true
 		 else 
@@ -403,7 +404,7 @@ function car(ix,iy)
 	end, 
 
 	draw=function(self)
-    rot_sqr(0,self.x,self.y,self.angle, draw_px)
+    rotate_sprite(self.x,self.y,self.angle)
  end,
  
  rotate_wheel_posn=function(self,pos)
@@ -419,22 +420,40 @@ function car(ix,iy)
  end,
  
 	add_skid=function(self,skids,pos,add_it, add_smoke)
-		local skd=self.rotate_wheel_posn(self,pos)
+	 local skd=self.rotate_wheel_posn(self,pos)
 	 if(add_it) then
- 	 add(skids,skd)
- 	 if add_smoke then create_smoke(skd,to_pos(self.new_dx/2,self.new_dy/2)) end
+  	 add(skids,skd)
 	 else
 	  add(skids,{x=nil,y=nil})
 	 end
-	end
+	end,
+  create_smoke_on_wheels=function(self)   
+ 	 local skd=self.rotate_wheel_posn(self,self.r_wheels[1])
+   local skd2=self.rotate_wheel_posn(self,self.r_wheels[2])
+   if (self.new_dx>10) then
+    local dir=calc_vector(self.angle,0.5)
+    create_smoke(skd,dir) 
+    create_smoke(skd2,dir) 
+   else 
+    create_smoke(skd,to_pos(self.new_dx/2,self.new_dy/2)) 
+ 	  create_smoke(skd2,to_pos(self.new_dx/2,self.new_dy/2)) 
+   end
+  end
+
 	}
+end
+
+function calc_vector(angle,speed)
+ new_dx=(speed*cos(-angle/360))
+ new_dy=(speed*sin(-angle/360))
+ return {x=new_dx,y=new_dy}
 end
 
 function speed_of(x,y)
   return sqrt(x*x+y*y)
 end
 
-function rot_sqr(s,x,y,a,fn)
+function rotate_sprite(x,y,a)
 sw_rot=a/360
 mx=-0.0
 my=-0.6
@@ -476,9 +495,11 @@ function draw_ghost()
  local pos =ghost[timer-(lap.finish-lap.start)]
  if pos!=nil then
   ghost_car.angle=pos.angle
+  ghost_car:create_smoke_on_wheels()
   pal(9,12)
   ghost_car:draw()
   pal()
+  
   ghost_car.x=pos.x
   ghost_car.y=pos.y
  end
