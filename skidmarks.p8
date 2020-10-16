@@ -10,7 +10,7 @@ sound=false
 timer_start=0
 game_length=60
 drawmode="2d"
-players=1
+players=2
 --try coroutines for game state
 
 function _init()
@@ -115,21 +115,26 @@ function _draw()
     rectfill(-200,-200,1024,1027,3)
     map(0, 0, 0, 0, 1024, 64)
     rectfill(-200,-200,200,16,3)
+    --track skids
     draw_skids(skids_l)
     draw_skids(skids_r)
     draw_skids(skids_fl)
     draw_skids(skids_fr)
     
+    car1:draw_skids()    
+    if car2!=nil then car2:draw_skids()  end
+        
     draw_tyres()
 
     for d in all(dust) do
     d:draw()
     end
-    draw_ghost()
+    
+--    draw_ghost()
+    
     car1:draw()
     if car2!=nil then car2:draw()  end
     
-    if bob!="" then printh(bob) end
     draw_speedo(0)
     print(flr(score),window_x+100,window_y+120,7)
     --print(stat(1),window_x+0,window_y+10,black) --CTRL-P FTW!
@@ -142,7 +147,11 @@ function _draw()
     end
     end
      print(flr(game_length-(time()-timer_start)), window_x+40,window_y,black)
+     bob="cpu" ..stat(1) .." ".. stat(7)
+
+    if bob!="" then print(bob,window_x+10,window_y+10) end
   end 
+  
 end
 
 function steer(car,player)
@@ -290,7 +299,7 @@ end
 -->8
 -- car
 v_wall=60
-alternate=0
+
 
 function draw_px(x,y,colour)
  pset(x,y,colour)
@@ -315,7 +324,12 @@ function car(ix,iy)
  accelerate=false,
  skidding=false,
  front_skids=false,
+ skids_l={},
+ skids_r={},
+ skids_fl={},
+ skids_fr={},
  colour=car_colour(),
+ alternate=0,
  r_wheels={{y=6,x=7,l="br"},{y=-6,x=7,l="bl"},{y=6,x=-7,l="fr"},{y=-6,x=-7,l="fl"}},
  
  pos=function(self)
@@ -323,6 +337,19 @@ function car(ix,iy)
  end,
  
  would_hit_wall=function(self,dx,dy,wall)
+   for wheel in all(self.r_wheels) do
+    local wheel_pos={x=self.x+wheel.x,y=self.y+wheel.y}
+    local locn=self:rotate_wheel_posn(wheel)
+
+ 		 sprite=mget(locn.x/8,locn.y/8)
+			 if(sprite==wall) do   
+			  return true
+			 end
+   end   
+   return false
+ end,
+
+ would_hit_other_car=function(self,dx,dy,wall)
    for wheel in all(self.r_wheels) do
     local wheel_pos={x=self.x+wheel.x,y=self.y+wheel.y}
     local locn=self:rotate_wheel_posn(wheel)
@@ -419,36 +446,42 @@ function car(ix,iy)
   
 	add_skids=function(self)
 	 if (self.x==70.06 and self.y==64) then return end
-		if(alternate%4==0) then
+		if(self/alternate%4==0) then
     if self.accelerate then self:create_smoke_on_wheels() end
  		if (self.skidding) then
- 	  self:add_skid(skids_r,self.r_wheels[1],true,true)
- 	  self:add_skid(skids_l,self.r_wheels[2],true,true)	  
+ 	  self:add_skid(self.skids_r,self.r_wheels[1],true,true)
+ 	  self:add_skid(self.skids_l,self.r_wheels[2],true,true)	  
 	   --add_new_dust
 	   self.was_skidding=true
 		 else 
 		  if (self.was_skidding) then
- 	   self:add_skid(skids_r,self.r_wheels[1],false,true)
-     self:add_skid(skids_l,self.r_wheels[2],false,true)
+ 	   self:add_skid(self.skids_r,self.r_wheels[1],false,true)
+     self:add_skid(self.skids_l,self.r_wheels[2],false,true)
     end
     self.was_skidding=false
 		 end
 
  		if (self.front_skids) then
- 	  self:add_skid(skids_fr,self.r_wheels[3],true,false)
- 	  self:add_skid(skids_fl,self.r_wheels[4],true,false)	  
+ 	  self:add_skid(self.skids_fr,self.r_wheels[3],true,false)
+ 	  self:add_skid(self.skids_fl,self.r_wheels[4],true,false)	  
 	   --add_new_dust
 	   self.was_f_skidding=true
 		 else 
 		  if (self.was_f_skidding) then
- 	   self:add_skid(skids_fr,self.r_wheels[3],false,false)
-     self:add_skid(skids_fl,self.r_wheels[4],false,false)
+ 	   self:add_skid(self.skids_fr,self.r_wheels[3],false,false)
+     self:add_skid(self.skids_fl,self.r_wheels[4],false,false)
     end
     self.was_f_skidding=false
 		 end
 		end
-  alternate+=1
+  self.alternate+=1
 	end, 
+  draw_skids=function(self)
+    draw_skids(self.skids_l)
+    draw_skids(self.skids_r)
+--    draw_skids(self.skids_fl)
+--    draw_skids(self.skids_fr)
+  end,
 
 	draw=function(self)
     pal(1,0)
@@ -615,9 +648,10 @@ function add_tyres()
   {x=11,y=35}
   }
 end
+
 function draw_skids(skiddies)
  local ops=0
-	local prevx=nil 
+ local prevx=nil 
  local prevy=nil
  for skid in all(skiddies) do
  	if(prevx != nil and skid.x !=nil ) do 
@@ -638,7 +672,6 @@ function draw_skids(skiddies)
 	 prevy=skid.y
  end  
 -- bob=#skiddies .. " " ..ops
--- bob=bob .. "cpu" ..stat(1) .." ".. stat(7)
 end
 
 function print_skids(skidlist)
@@ -670,13 +703,13 @@ end
 
 function draw_speedo(adj)
 local rad=20
-
 local spdo_x=window_x+20
 local spdo_y=window_y+128+adj
  circ(spdo_x,spdo_y+10,rad+1,1)
  circfill(spdo_x,spdo_y+10,rad,6)
  draw_taco(car1.speed,spdo_x,spdo_y)
 end
+
 function draw_taco(speed,x,y)
  print(speed,x+4,y-6,8)
  circfill(x-5,y,8,0)
@@ -699,7 +732,7 @@ end
 
 -->8
 function create_smoke(pos,direction)
- add_new_dust(pos.x,pos.y,direction.x+rnd(0.6)-0.3,direction.y,15,rnd(2)+2,0.0,7)
+ add_new_dust(pos.x,pos.y,direction.x+rnd(0.6)-0.3,direction.y,10,rnd(2)+2,0.0,7)
 end
 
 function add_new_dust(_x,_y,_dx,_dy,_l,_s,_g,_f)
@@ -721,7 +754,7 @@ function add_new_dust(_x,_y,_dx,_dy,_l,_s,_g,_f)
        fillp(0b0101101001011010.1) 
       else 
        fillp(0b1010010110100101.1) 
-						end
+			end
       circfill(self.x,self.y,self.rad,6)
       circfill(self.x,self.y,self.rad-1,self.col)
       fillp()
@@ -847,15 +880,15 @@ __gfx__
 00999999999999000000000000999999999999000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 00090000000090000000000000090000000090000900000000000000000000000800001888881100000000000b00001bbbbb1100000000000000000000000000
 00999999999999000000000000999999999999000999999999999999999999000888811888881111888888000bbbb11bbbbb1111bbbbbb000000000000000000
-0098899999988900000000000098899999988900090999111111111199999900080881188888111188888a000b08b11bbbbb1111bbbbba000000000000000000
-09999999999999900000000009999999999999900909911111111111999999000808811888881111888887000b08b11bbbbb1111bbbbb7000000000000000000
+0098899999988900000000000098899999988900090999111111119199999900080881188888111188888a000b08b11bbbbb1111bbbbba000000000000000000
+09999999999999900000000009999999999999900909911111111911999999000808811888881111888887000b08b11bbbbb1111bbbbb7000000000000000000
 19999999999999910000000019999999999999910909911111111111999999000808811888881111888887000b08b11bbbbb1111bbbbb7000000000000000000
 19999999999999910000000019999999999999910909911111111111999999000808811888881111888888000b0bb11bbbbb1111bbbbbb000000000000000000
 11100000000001110000000011100000000001110909911111111111999999000808811888881111888888000b0bb11bbbbb1111bbbbbb000000000000000000
 00000000000000000000000000000000000000000909911111111111999999000808811888881111888888000b0bb11bbbbb1111bbbbbb000000000000000000
 00000000000000000000000000000000000000000909911111111111999999000808811888881111888887000b08b11bbbbb1111bbbbb7000000000000000000
-00000000000000000000000000000000000000000909911111111111999999000808888811111111888887000b08bbbb11111111bbbbb7000000000000000000
-00000000000000000000000000000000000000000909991111111111999999000808881111111111888887000b08bb1111111111bbbbb7000000000000000000
+00000000000000000000000000000000000000000909911111111911999999000808888811118811888887000b08bbbb1111bb11bbbbb7000000000000000000
+00000000000000000000000000000000000000000909991111111191999999000808881111111181888887000b08bb11111111b1bbbbb7000000000000000000
 00000000000000000000000000000000000000000999999999999999999999000888888888888888888888000bbbbbbbbbbbbbbbbbbbbb000000000000000000
 00000000000000000000000000000000000000000900000000000000000000000808111188888888111188000b0b1111bbbbbbbb1111bb000000000000000000
 00000000000000000000000000000000000000000000000000000000000000000004111144444444111144000004111144444444111144000000000000000000
@@ -870,7 +903,7 @@ __gfx__
 00040000000000000000090000000111111111110009999999999999999991000c0cc11ccccc1111cccccc000000000000000000000000000000000000000000
 00040000000000000000090000000111111111110009999999999999999991000c0cc11ccccc1111cccccc000000000000000000000000000000000000000000
 00040000000000000000090000000111111111110008999999999999999997000c0cc11ccccc1111ccccc7000000000000000000000000000000000000000000
-00040000000000000000090000000111111111110008999999999999999997000c0ccccc11111111ccccc7000000000000000000000000000000000000000000
+00040000000000000000090000000111111110110008999999999999999997000c0ccccc11111111ccccc7000000000000000000000000000000000000000000
 0004000000000000000009000000099911111100000899999999999999999a000c0ccc1111111111ccccc7000000000000000000000000000000000000000000
 00041551444444441551400000000000000000000009111199999999111199000ccccccccccccccccccccc000000000000000000000000000000000000000000
 00001111000000001111000000000000000000000000000000000000000000000c0c1111cccccccc1111cc000000000000000000000000000000000000000000
