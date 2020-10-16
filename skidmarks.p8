@@ -2,7 +2,6 @@ pico-8 cartridge // http://www.pico-8.com
 version 29
 __lua__
 -- main
-skidding=true
 bob=""
 started=false
 ended=false
@@ -11,6 +10,7 @@ sound=false
 timer_start=0
 game_length=60
 drawmode="2d"
+players=2
 --try coroutines for game state
 
 function _init()
@@ -35,7 +35,10 @@ car_clr=flr(rnd(16))
 if (car_clr==3 or car_clr==13) then car_clr=9 end
 car_clr=9
 ghost_car=car(110,64,chase_clr)
-car=car(70,64, car_clr) 
+car1=car(70,64, car_clr) 
+if players==2 then
+ car2=car(70,80, car_clr) 
+end
 --sfx(10,1)
 print_skids(skids_l)
 menuitem(1,"toggle 3d", function()
@@ -51,7 +54,7 @@ score=0
 function _update60()
  --do something 
  if skidding then
-  current_score=(abs(car.angle)*car.speed)/1000
+  current_score=(abs(car1.angle)*car1.speed)/1000
   score+=current_score
 end
  if((started==false or ended==true) and btn(❎)) then
@@ -61,18 +64,13 @@ end
  end
  if(started) then
   if (btn(⬅️)) then 
-   car.steer=clamp(car.steer-0.5,-5,5)  
+   car1.steer=clamp(car1.steer-0.5,-5,5)  
   elseif (btn(➡️)) then 
-   car.steer=clamp(car.steer+0.5,-5,5)
+   car1.steer=clamp(car1.steer+0.5,-5,5)
   else
-   if(car.steer>0) then car.steer-=0.5 end
-   if(car.steer<0) then car.steer+=0.5 end
+   if(car1.steer>0) then car1.steer-=0.5 end
+   if(car1.steer<0) then car1.steer+=0.5 end
   end
-  --if (btn(🅾️) and not printed) then 
-  -- _init()
-  -- print_all_skids()
-  -- printed=true
-  --end
   if (btnp(🅾️)) then
    if drawmode=="3d" then
     drawmode="2d"
@@ -82,26 +80,26 @@ end
    end
   
   if (btn(❎)) then 
-   handbrake=true  
+   car1.handbrake=true  
   else
-   handbrake=false
+   car1.handbrake=false
   end
   if (btn(⬆️)) then
-   accelerate=true
+   car1.accelerate=true
   else
-   accelerate=false
+   car1.accelerate=false
   end
   
   if (time()-timer_start>game_length) then
    ended=true
-
    started=true
   end
 
   timer+=1
-  car.angle=car.angle+car.steer
-  car:move()
-  add(ghost,car:pos())
+  car1.angle=car1.angle+car1.steer
+  car1:move()
+
+  if players==1 then add(ghost,car1:pos()) end
   for d in all(dust) do
    d:update()
   end
@@ -111,8 +109,8 @@ end
 
 function _draw()
   rectfill(-200,-200,1024,1027,3)
-
   if drawmode=="3d" then
+    car=car1  
     draw_rotated(car.x/8-2*cos(car.angle/360),car.y/8+2*sin(car.angle/360),1-car.angle/360)
     print("car:" ..car.x..":"..car.y.." bob" .. car.x/8+2*cos(1-car.angle/360).." "..car.y/8-2*sin(1-car.angle/360).." "..1-car.angle/360, 0,0,7)
     print(stat(1),0,10,black) --CTRL-P FTW!
@@ -122,8 +120,8 @@ function _draw()
   elseif (not started) then
    drawstart()
   else 
-    window_x=car.x-58
-    window_y=car.y-58
+    window_x=car1.x-58
+    window_y=car1.y-58
     camera(window_x,window_y)
     rectfill(-200,-200,1024,1027,3)
     map(0, 0, 0, 0, 1024, 64)
@@ -139,7 +137,7 @@ function _draw()
     d:draw()
     end
     draw_ghost()
-    car:draw()
+    car1:draw()
     if bob!="" then printh(bob) end
     draw_speedo(0)
     print(flr(score),window_x+100,window_y+120,7)
@@ -199,7 +197,7 @@ function draw_rotated(mx,my,a)
    ) 
 
    draw_billboard_sprite(
-    {x=car.x/8,y=car.y/8,tex_x=0,tex_y=32,width=16,height=8,z=100},
+    {x=car1.x/8,y=car1.y/8,tex_x=0,tex_y=32,width=16,height=8,z=100},
     mx,my, -- cam position
     stx,sty,
     msx,msy
@@ -222,7 +220,7 @@ lap_scores={}
 
 
 function record_lap()
- sprite=mget(car.x/8,car.y/8)
+ sprite=mget(car1.x/8,car1.y/8)
 
  if (sprite==start and (this_lap()==nil or timer-this_lap().start>20)) do 
   lap_count+=1
@@ -293,6 +291,10 @@ function car(ix,iy,colour)
  acc=0.2,
  max_dx=2,
  max_dy=2,
+ handbrake=false,
+ accelerate=false,
+ skidding=false,
+ front_skids=false,
  r_wheels={{y=6,x=7,l="br"},{y=-6,x=7,l="bl"},{y=6,x=-7,l="fr"},{y=-6,x=-7,l="fl"}},
  
  pos=function(self)
@@ -335,7 +337,7 @@ function car(ix,iy,colour)
   
 		local delta_dx=(self.new_dx-dx)/50
 		local delta_dy=(self.new_dy-dy)/50
-  if (not handbrake and accelerate) do
+  if (not self.handbrake and self.accelerate) do
  		dx=dx+delta_dx
  		dy=dy+delta_dy
   else
@@ -364,25 +366,26 @@ function car(ix,iy,colour)
   local angle=self.angle%360
   local dangle=(flr(atan2(self.dy,self.dx)*360)+90)%360
   local diffangle = abs(dangle-angle)
-  front_skids=false
+  self.front_skids=false
 
   if (diffangle>90) then
-   skidding=true
-   front_skids=true
+   self.skidding=true
+   self.front_skids=true
   elseif (diffangle>40) then
-   skidding=true
+   self.skidding=true
    if (sound) then
     sfx(8,2)
     sfx(12,1)
    end
   elseif (diffangle>20) then
-   skidding=true
+   self.skidding=true
    if (sound) then
     sfx(8,2)
     sfx(12,1)
    end
   else 
-   skidding=false
+   self.skidding=false
+   
   end
   
   self.dx=dx
@@ -390,35 +393,35 @@ function car(ix,iy,colour)
 		-- add skids
     self:add_skids()
 	end,	
-	
+  
 	add_skids=function(self)
 	 if (self.x==70.06 and self.y==64) then return end
 		if(alternate%4==0) then
-    if accelerate then self:create_smoke_on_wheels() end
- 		if (skidding) then
+    if self.accelerate then self:create_smoke_on_wheels() end
+ 		if (self.skidding) then
  	  self:add_skid(skids_r,self.r_wheels[1],true,true)
  	  self:add_skid(skids_l,self.r_wheels[2],true,true)	  
 	   --add_new_dust
-	   was_skidding=true
+	   self.was_skidding=true
 		 else 
-		  if (was_skidding) then
+		  if (self.was_skidding) then
  	   self:add_skid(skids_r,self.r_wheels[1],false,true)
      self:add_skid(skids_l,self.r_wheels[2],false,true)
     end
-    was_skidding=false
+    self.was_skidding=false
 		 end
 
- 		if (front_skids) then
+ 		if (self.front_skids) then
  	  self:add_skid(skids_fr,self.r_wheels[3],true,false)
  	  self:add_skid(skids_fl,self.r_wheels[4],true,false)	  
 	   --add_new_dust
-	   was_f_skidding=true
+	   self.was_f_skidding=true
 		 else 
-		  if (was_f_skidding) then
+		  if (self.was_f_skidding) then
  	   self:add_skid(skids_fr,self.r_wheels[3],false,false)
      self:add_skid(skids_fl,self.r_wheels[4],false,false)
     end
-    was_f_skidding=false
+    self.was_f_skidding=false
 		 end
 		end
   alternate+=1
@@ -527,11 +530,9 @@ function draw_ghost()
  if pos!=nil then
   ghost_car.angle=pos.angle
   if(alternate%4==0) then ghost_car:create_smoke_on_wheels() end
-  -- pal(9,chase_clr)
-  -- pal(1,0)
+
   ghost_car:draw()
-  -- pal()
-  
+ 
   ghost_car.x=pos.x
   ghost_car.y=pos.y
  end
@@ -651,7 +652,7 @@ local spdo_x=window_x+20
 local spdo_y=window_y+128+adj
  circ(spdo_x,spdo_y+10,rad+1,1)
  circfill(spdo_x,spdo_y+10,rad,6)
- draw_taco(car.speed,spdo_x,spdo_y)
+ draw_taco(car1.speed,spdo_x,spdo_y)
 end
 function draw_taco(speed,x,y)
  print(speed,x+4,y-6,8)
