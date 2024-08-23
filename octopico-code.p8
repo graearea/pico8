@@ -37,7 +37,7 @@ end
 
 function new_octo()
   return {
-    x = 100,
+    x = 64-20,
     y = 0,
     update = function(self)
       if btn(⬆️) then
@@ -46,11 +46,21 @@ function new_octo()
       if btn(⬇️) then
         self.y = self.y + 2
       end
-    end,
+      if btn(❎) then
+        self.zapping=true
+        print("boom")
+      else
+        self.zapping=false
+      end
 
+    end,
+    zapping=false,
     draw = function(self)
       palt(0, true)
       spr(5, self.x, self.y)
+      if self.zapping then
+        spr(6, self.x + 8, self.y)
+      end
     end
   }
     end
@@ -85,6 +95,7 @@ arriving="arriving"
 charging="charging"
 leaving="leaving"
 burning="burning"
+parked="parked"
 
 function new_car(slot)
   car= {
@@ -103,7 +114,7 @@ function new_car(slot)
         sp = flr(rnd(2))
         spr(17 + sp, self.x, self.y)
         spr(17 + sp, self.x + 8, self.y)
-      elseif self.state==charging then
+      elseif self.state==charging or self.state==parked then
         rect(self.x + 20, self.y, self.x + 60, self.y + 8,12)
         rectfill(self.x + 20, self.y, self.x + 20 +to_bar(self.soc), self.y + 8,colour_for_charge(self.soc))
       end
@@ -112,7 +123,7 @@ function new_car(slot)
       if self.x < (64 - 8) then
         self.x = self.x + 1
       else
-        self.state = charging
+        self.state = parked
       end
     end,
     update = function(self)
