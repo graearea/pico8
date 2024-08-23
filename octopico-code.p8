@@ -81,6 +81,10 @@ end
 -->8
 -- cars
 
+arriving="arriving"
+charging="charging"
+leaving="leaving"
+burning="burning"
 
 function new_car(slot)
   car= {
@@ -89,7 +93,7 @@ function new_car(slot)
     y = slot * 8,
     soc = rnd(30),
     colour = set_colour(),
-    is_on_fire = false,
+    state = arriving,
     draw = function(self)
       pal(8, self.colour)
       spr(0, self.x, self.y)
@@ -101,9 +105,14 @@ function new_car(slot)
         spr(17 + sp, self.x + 8, self.y)
       end
     end,
-    update = function(self)
+    arriving=function(self)
       if self.x < (128 - 16) then
         self.x = self.x + 1
+      end
+    end,
+    update = function(self)
+      if self.state==arriving then
+        self:arriving()
       end
       self.soc = self.soc + 1
       if self.soc > 100 then
