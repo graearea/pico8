@@ -1,12 +1,10 @@
 pico-8 cartridge // http://www.pico-8.com
 version 41
 __lua__
-
-
 function _init()
 rocks ={}
  for i=1,10 do
- 	add(rocks,rock:new(rnd(128),rnd(128)))
+ 	add(rocks,rock_new(rnd(128),rnd(128)))
  end
 end
 
@@ -24,36 +22,32 @@ function _draw()
 end
 
 -->8
-rock = {}
-rock.__index = rock
 
-function rock:new(xx, yy)
-	local created = setmetatable({}, rock)
-	created.x = xx
-	created.y = yy
+function rock_new(xx, yy)
 
-	created.coroutine = cocreate(function(self)
+return {
+	x = xx,
+	y = yy,
+	coroutine = cocreate(function(self)
 		for i = yy,124,4 do
 	   self.y = i
 	   yield()
 	 end
-	end)
+	end),
 
-	created.update=function(self)
+	update=function(self)
 	 coresume(self.coroutine, self)
-	end
+	end,
 	
- created.draw=	function(self)
+ draw=	function(self)
 		if costatus(self.coroutine)!= 'dead' then
 	 	spr(1,self.x,self.y)
 	 else
 	 	print("it's dead")
 	 end
 	end
-	
-	return created
+ }	
 end
-
 
 
 
