@@ -57,8 +57,8 @@ function new_octo()
 
 function draw_parking_spots()
   for i = 1, 16 do
-    spr(55, 128 - 16, i * 8)
-    spr(56, 128 - 8, i * 8)
+    spr(55, 64 - 8, i * 8)
+    spr(56, 64 - 0, i * 8)
   end
 end
 
@@ -95,18 +95,21 @@ function new_car(slot)
     colour = set_colour(),
     state = arriving,
     draw = function(self)
-      pal(8, self.colour)
+      pal(11, self.colour)
       spr(0, self.x, self.y)
       spr(1, self.x + 8, self.y)
-      if self.is_on_fire then
-        pal(8, 8)
+      pal(11,11)
+      if self.state==burning then
         sp = flr(rnd(2))
         spr(17 + sp, self.x, self.y)
         spr(17 + sp, self.x + 8, self.y)
+      elseif self.state==charging then
+        rect(self.x + 20, self.y, self.x + 60, self.y + 8,12)
+        rectfill(self.x + 20, self.y, self.x + 20 +to_bar(self.soc), self.y + 8,colour_for_charge(self.soc))
       end
     end,
     arriving=function(self)
-      if self.x < (128 - 16) then
+      if self.x < (64 - 8) then
         self.x = self.x + 1
       else
         self.state = charging
@@ -121,7 +124,6 @@ function new_car(slot)
           self.state=burning
         end
       elseif self.state==burning then
-        self.is_on_fire = true
       elseif self.state==leaving then
         self:leave()
       end
@@ -132,7 +134,6 @@ function new_car(slot)
         self.leaving = true
       end
     end,
-    leaving = false,
     leave = function(self)
         self.x = self.x + 1
         if self.x > 130 then
@@ -152,5 +153,19 @@ function set_colour()
     return 3
   else
     return col
+  end
+end
+
+function to_bar(perc)
+  return 40/100*perc
+end
+
+function colour_for_charge(charge)
+  if charge > 90 then
+    return 8
+  elseif charge>30 then
+    return 12
+  else
+    return 10
   end
 end
