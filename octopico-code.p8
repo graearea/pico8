@@ -7,50 +7,24 @@
 -- charge is and stop the charging
 -- in time
 function _init()
-    octo = new_octo()
-    time = 0
-    cars = {}
-    -- cars={new_car(2),new_car(3)}
-end
-
-function new_octo()
-    return {
-        x = 100,
-        y = 0,
-        update = function(self)
-            if btn(⬆️) then
-                self.y = self.y - 2
-            end
-            if btn(⬇️) then
-                self.y = self.y + 2
-            end
-            if btn(⬅️) then
-                self.x = self.x - 1
-            end
-            if btn(➡️) then
-                self.x = self.x + 1
-            end
-        end,
-
-        draw = function(self)
-            palt(0, true)
-            spr(5, self.x, self.y)
-        end
-    }
+  octo = new_octo()
+  time = 0
+  cars = {}
+    for i=1,16 do
+        new_car(i)
+    end
 end
 
 function _update()
     time = time + 1
     octo:update()
-    spawn_cars()
     for car in all(cars) do
         car:update()
-        car:leave()
     end
 end
 
 function _draw()
-    rectfill(0, 0, 128, 128, 1)
+    cls(1)
     print(time_str(), 0, 0, 0)
     palt(15, true)
     palt(0, false)
@@ -61,85 +35,108 @@ function _draw()
     octo:draw()
 end
 
-function draw_parking_spots()
-    for i = 1, 16 do
-        spr(55, 128 - 16, i * 8)
-        spr(56, 128 - 8, i * 8)
+function new_octo()
+  return {
+    x = 100,
+    y = 0,
+    update = function(self)
+      if btn(⬆️) then
+        self.y = self.y - 2
+      end
+      if btn(⬇️) then
+        self.y = self.y + 2
+      end
+    end,
+
+    draw = function(self)
+      palt(0, true)
+      spr(5, self.x, self.y)
     end
+  }
+    end
+
+function draw_parking_spots()
+  for i = 1, 16 do
+    spr(55, 128 - 16, i * 8)
+    spr(56, 128 - 8, i * 8)
+  end
 end
 
 function charge_cars()
-    for car in all(cars) do
-        car:charge()
-    end
+  for car in all(cars) do
+    car:charge()
+  end
 end
 function spawn_cars()
-    if rnd(10) < 1 then
-        add(cars, new_car(#cars))
-    end
+  if rnd(10 ) < 1 then
+    add(cars, new_car(#cars))
+  end
 end
 
 function time_str()
-    --time is 30/second
-    secs = time / 10
-    return flr((secs / 6) % 24) .. ":" .. flr(secs % 6) .. 0
+  --time is 30/second
+  secs = time / 10
+  return flr((secs / 6) % 24) .. ":" .. flr(secs % 6) .. 0
 end
 -->8
 -- cars
 
 
 function new_car(slot)
-    return {
-        slot = slot,
-        x = -16,
-        y = slot * 8,
-        soc = rnd(30),
-        colour = set_colour(),
-        is_on_fire = false,
-        draw = function(self)
-            pal(8, self.colour)
-            spr(0, self.x, self.y)
-            spr(1, self.x + 8, self.y)
-            if self.is_on_fire then
-                pal(8, 8)
-                sp = flr(rnd(2))
-                spr(17 + sp, self.x, self.y)
-                spr(17 + sp, self.x + 8, self.y)
-            end
-        end,
-        update = function(self)
-            if self.x < (128 - 16) then
-                self.x = self.x + 1
-            end
-            self.soc = self.soc + 1
-            if self.soc > 100 then
-                self.is_on_fire = true
-            end
-        end,
-        complete = function(self)
-            if self.soc > 80 then
-                self.leaving = true
-            end
-        end,
-        leaving = false,
-        leave = function(self)
-            if leaving then
-                self.x = self.x + 1
-                if self.x > 130 then
-                    score = score + self.soc
-                    del(cars, self)
-                end
-            end
+  car= {
+    slot = slot,
+    x = -16,
+    y = slot * 8,
+    soc = rnd(30),
+    colour = set_colour(),
+    is_on_fire = false,
+    draw = function(self)
+      pal(8, self.colour)
+      spr(0, self.x, self.y)
+      spr(1, self.x + 8, self.y)
+      if self.is_on_fire then
+        pal(8, 8)
+        sp = flr(rnd(2))
+        spr(17 + sp, self.x, self.y)
+        spr(17 + sp, self.x + 8, self.y)
+      end
+    end,
+    update = function(self)
+      if self.x < (128 - 16) then
+        self.x = self.x + 1
+      end
+      self.soc = self.soc + 1
+      if self.soc > 100 then
+        self.is_on_fire = true
+      end
+    end,
+
+    complete = function(self)
+      if self.soc > 80 then
+        self.leaving = true
+      end
+    end,
+    leaving = false,
+    leave = function(self)
+      if leaving then
+        self.x = self.x + 1
+        if self.x > 130 then
+          score = score + self.soc
+          del(cars, self)
         end
-    }
+      end
+    end
+  }
+    add(cars,car)
+    return car
 end
 score = 0
 
 function set_colour()
-    col = flr(rnd(15))
-    if col == 1 then
-        return 3
-    else
-        return col
-    end
+  col = flr(rnd(15))
+  if col == 1 then
+    return 3
+  else
+    return col
+  end
 end
