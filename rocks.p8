@@ -9,44 +9,46 @@ rocks ={}
 end
 
 function _update()
-    for rock in all(rocks) do
-        rock:update()
-    end
+  for rock in all(rocks) do
+    rock:update()
+  end
 end
 
 function _draw()
 	cls(1)
-	for r in all(rocks) do
-		r:draw()
+	for rock in all(rocks) do
+		rock:draw()
 	end
 end
 
 -->8
 function rock_new()
- created = {
-     x = rnd(128),
-     y = rnd(128)-128,
-     coroutine = cocreate(function(self)
-         while self.y<128 do
-             self.y = self.y+3
-             yield()
-         end
-     end),
-     is_dead=function(self)  return costatus(self.coroutine) == 'dead'	end,
-     update=function(self)
-         coresume(self.coroutine, self)
-         if self:is_dead() then
-             del(rocks, self)
-             rock_new()
-         end
-     end,
+  a_new_rock = {
+    x = rnd(128),
+    y = rnd(128) - 128,
+    lifecycle = cocreate(function(self)
+      while self.y < 128 do
+        self.y = self.y + 3
+        yield()
+      end
+    end),
+    is_dead = function(self)
+      return costatus(self.lifecycle) == 'dead'
+    end,
+    update = function(self)
+      coresume(self.lifecycle, self)
+      if self:is_dead() then
+        del(rocks, self)
+        rock_new()
+      end
+    end,
 
-     draw=	function(self)
-         spr(1,self.x,self.y)
-     end
- }
-    add(rocks,created)
-    return created
+    draw = function(self)
+      spr(1, self.x, self.y)
+    end
+  }
+  add(rocks, a_new_rock)
+  return a_new_rock
 end
 
 __gfx__
