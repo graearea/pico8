@@ -4,57 +4,50 @@ __lua__
 function _init()
 rocks ={}
  for i=1,10 do
- 	add(rocks,rock_new())
+ 	rock_new()
  end
 end
 
 function _update()
-	for r in all(rocks) do
-	 if costatus(r.coroutine)!="dead" then
-	 	r:update()
-		else
-			del(rocks,r)
-	 	add(rocks,rock_new())
-		end
-	end
+    for rock in all(rocks) do
+        rock:update()
+    end
 end
 
 function _draw()
- cls(1)
+	cls(1)
 	for r in all(rocks) do
 		r:draw()
 	end
 end
 
 -->8
+function rock_new()
+ created = {
+     x = rnd(128),
+     y = rnd(128)-128,
+     coroutine = cocreate(function(self)
+         while self.y<128 do
+             self.y = self.y+3
+             yield()
+         end
+     end),
+     is_dead=function(self)  return costatus(self.coroutine) == 'dead'	end,
+     update=function(self)
+         coresume(self.coroutine, self)
+         if self:is_dead() then
+             del(rocks, self)
+             rock_new()
+         end
+     end,
 
-function rock_new(xx, yy)
-
-return {
-	x = rnd(128),
-	y = rnd(128)-128,
-	coroutine = cocreate(function(self)
-		 while self.y<128 do
-		  self.y = self.y+3
-		  yield()
-		 end
-	end),
-
-	update=function(self)
-	 coresume(self.coroutine, self)
-	end,
-	
- draw=	function(self)
-		if costatus(self.coroutine)!= 'dead' then
-	 	spr(1,self.x,self.y)
-	 else
-	 	print("it's dead")
-	 end
-	end
- }	
+     draw=	function(self)
+         spr(1,self.x,self.y)
+     end
+ }
+    add(rocks,created)
+    return created
 end
-
-
 
 __gfx__
 00000000099999900000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
