@@ -4,13 +4,18 @@ __lua__
 function _init()
 rocks ={}
  for i=1,10 do
- 	add(rocks,rock_new(rnd(128),rnd(128)))
+ 	add(rocks,rock_new())
  end
 end
 
 function _update()
 	for r in all(rocks) do
-		r:update()
+	 if costatus(r.coroutine)!="dead" then
+	 	r:update()
+		else
+			del(rocks,r)
+	 	add(rocks,rock_new())
+		end
 	end
 end
 
@@ -26,13 +31,13 @@ end
 function rock_new(xx, yy)
 
 return {
-	x = xx,
-	y = yy,
+	x = rnd(128),
+	y = rnd(128)-128,
 	coroutine = cocreate(function(self)
-		for i = yy,124,4 do
-	   self.y = i
-	   yield()
-	 end
+		 while self.y<128 do
+		  self.y = self.y+3
+		  yield()
+		 end
 	end),
 
 	update=function(self)
