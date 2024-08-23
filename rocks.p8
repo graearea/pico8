@@ -5,49 +5,82 @@ __lua__
 
 function _init()
 rocks ={}
-cor={}
 
--- for i=1,10 do
--- 	add(rocks,add_rock(rnd(128),rnd(128)))
--- 	add(cor,cocreate(rocks[i]:update()))
--- end
-rock=add_rock(rnd(128))
-doop=cocreate(bob)
+ for i=1,10 do
+ 	add(rocks,rock:new(rnd(128),rnd(128)))
+ end
 
-end
-
-function bob()
- rock:update()
 end
 
 function _update()
-	coresume(doop)
+	for r in all(rocks) do
+		r:update()
+	end
 end
 
 function _draw()
  cls(1)
--- for i=1,10 do
-		if costatus(doop)!= 'dead' then
-	 	spr(1,rock.x,rock.y)
-	 else
-	 print("it's dead")
-	 end
---	end
+	for r in all(rocks) do
+		r:draw()
+	end
 end
 
 -->8
+rock = {}
+rock.__index = rock
+
+function rock:new(xx, xy)
+	local created = setmetatable({}, rock)
+	created.x = xx
+	created.y = yy
+	created.coroutine = cocreate(function(self)
+		for i = 4,124,4 do
+	   self.y = i
+	   yield()
+	 end
+	end)
+	return created
+end
+
+function rock:update()
+	coresume(self.coroutine, self)
+end
+
+function rock:draw()
+		if costatus(self.coroutine)!= 'dead' then
+	 	spr(1,self.x,self.y)
+	 else
+	 	print("it's dead")
+	 end
+end
+
 function add_rock(xx,yy)
-	return {
+ return {
 		x=xx,
 		y=yy,
+		cor=cocreate(function(self)
+			for i = 4,124,4 do
+		   self.y = i
+		   yield()
+		 end
+		end),
 		update=function(self)
 		 for i = 4,124,4 do
    	self.y = i
     yield()
    end
 	 end
-	} 
+	}
 end
+
+function update()
+	for i = 4,124,4 do
+   self.y = i
+   yield()
+ end
+end 
+-->8
+--hola
 __gfx__
 00000000099999900000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 00000000099999990000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
