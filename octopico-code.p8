@@ -108,15 +108,22 @@ function new_car(slot)
     arriving=function(self)
       if self.x < (128 - 16) then
         self.x = self.x + 1
+      else
+        self.state = charging
       end
     end,
     update = function(self)
       if self.state==arriving then
         self:arriving()
-      end
-      self.soc = self.soc + 1
-      if self.soc > 100 then
+      elseif self.state==charging then
+        self.soc = self.soc + 1
+        if self.soc > 100 then
+          self.state=burning
+        end
+      elseif self.state==burning then
         self.is_on_fire = true
+      elseif self.state==leaving then
+        self:leave()
       end
     end,
 
@@ -127,13 +134,11 @@ function new_car(slot)
     end,
     leaving = false,
     leave = function(self)
-      if leaving then
         self.x = self.x + 1
         if self.x > 130 then
           score = score + self.soc
           del(cars, self)
         end
-      end
     end
   }
     add(cars,car)
