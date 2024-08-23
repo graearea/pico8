@@ -13,6 +13,7 @@ function _init()
   for i = 1, 16 do
     new_car(i)
   end
+  score=0
 end
 log = ""
 
@@ -26,7 +27,7 @@ end
 
 function _draw()
   cls(1)
-  print(time_str(), 0, 0, 0)
+  print(flr(score), 0, 0, 0)
   palt(15, true)
   palt(0, false)
   draw_parking_spots()
