@@ -10,24 +10,29 @@ function _init()
   octo = new_octo()
   time = 0
   cars = {}
-  for i = 1, 16 do
-    new_car(i)
-  end
   score=0
 end
 log = ""
 
 function _update()
   time = time + 1
+  if (time%3*1)==0 then
+    if #cars <15 then
+      new_car(#cars+1)
+    end
+  end
   octo:update()
   for car in all(cars) do
     car:update()
   end
+  log="cars = ".. #cars
 end
 
 function _draw()
   cls(1)
   print(flr(score), 0, 0, 0)
+  print(time, 0, 8, 0)
+  print(log, 0, 16, 0)
   palt(15, true)
   palt(0, false)
   draw_parking_spots()
@@ -90,11 +95,12 @@ charging = "charging"
 leaving = "leaving"
 burning = "burning"
 parked = "parked"
+gone = "gone"
 
 function new_car(slot)
   car = {
     slot = slot,
-    x = -16,
+    x = -rnd(200),
     y = slot * 8,
     soc = rnd(30),
     colour = set_colour(),
@@ -134,17 +140,13 @@ function new_car(slot)
       end
     end,
 
-    complete = function(self)
-      if self.soc > 80 then
-        self.leaving = true
-      end
-    end,
     leave = function(self)
       self.x = self.x + 1
       if self.x > 130 then
         score = score + self.soc
-        add(cars,new_car(slot),slot)
+        self.state=gone
         del(cars, self)
+        new_car(slot)
       end
     end,
     zap = function(self)
@@ -155,7 +157,7 @@ function new_car(slot)
       end
     end
   }
-  add(cars, car)
+  add(cars, car,slot)
   return car
 end
 score = 0
